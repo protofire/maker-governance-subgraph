@@ -27,13 +27,8 @@ export function handleLinkConfirmed(event: LinkConfirmedEvent): void {
 }
 
 export function handleLock(event: LogNote): void {
-  let voteProxyId = event.params.guy.toHex()
-
-  let voteProxy = VoteProxy.load(voteProxyId)
-  if (voteProxy == null) {
-    log.error('handleLock: VoteProxy with id {} not found.', [voteProxyId])
-    return
-  }
+  let voteProxy = getLogNoteData(event, 'handleLock')
+  if (voteProxy == null) return
   let locked = toBigDecimal(event.params.foo)
   voteProxy.locked = voteProxy.locked.plus(locked)
   voteProxy.save()
@@ -49,19 +44,14 @@ export function handleLock(event: LogNote): void {
   action.type = 'LOCK'
   action.sender = event.params.guy
   action.wad = locked
-  action.transactionHash = event.transaction.hash;
+  action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
 }
 
 export function handleFree(event: LogNote): void {
-  let voteProxyId = event.params.guy.toHex()
-
-  let voteProxy = VoteProxy.load(voteProxyId)
-  if (voteProxy == null) {
-    log.error('handleLock: VoteProxy with id {} not found.', [voteProxyId])
-    return
-  }
+  let voteProxy = getLogNoteData(event, 'handleFree')
+  if (voteProxy == null) return
   let free = toBigDecimal(event.params.foo)
   voteProxy.locked = voteProxy.locked.minus(free)
   voteProxy.save()
@@ -77,10 +67,12 @@ export function handleFree(event: LogNote): void {
   action.type = 'FREE'
   action.sender = event.params.guy
   action.wad = free
-  action.transactionHash = event.transaction.hash;
+  action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
 }
+
+export function handleVote(event: LogNote): void {}
 
 function getGovernanceInfoEntity(): GovernanceInfo {
   let id = '0x0'
@@ -94,4 +86,14 @@ function getGovernanceInfoEntity(): GovernanceInfo {
   }
 
   return entity as GovernanceInfo
+}
+
+function getLogNoteData(event: LogNote, method: string): VoteProxy {
+  let voteProxyId = event.params.guy.toHex()
+
+  let voteProxy = VoteProxy.load(voteProxyId)
+  if (voteProxy == null)
+    log.error('{}: VoteProxy with id {} not found.', [method, voteProxyId])
+
+  return voteProxy as VoteProxy
 }

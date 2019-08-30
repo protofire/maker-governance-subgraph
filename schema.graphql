@@ -1,6 +1,8 @@
 enum ActionType {
   LOCK
   FREE
+  EXECUTIVE_VOTE
+  POLL_VOTE
 }
 
 type VoterRegistry @entity {
@@ -8,6 +10,17 @@ type VoterRegistry @entity {
   coldAddress: Bytes!
   hotAddress: Bytes!
   voteProxies: [VoteProxy!]! @derivedFrom(field: "owner")
+}
+
+type ExecutiveVote @entity {
+  id: ID!
+  locked: BigDecimal!
+  voters: [VoterRegistry!]!
+}
+
+type PollVote @entity {
+  id: ID!
+  voters: [VoterRegistry!]!
 }
 
 type VoteProxy @entity {
@@ -35,6 +48,8 @@ type Action @entity {
 type GovernanceInfo @entity {
   id: ID!
   countVoters: BigInt!
+  countExecutiveVotes: BigInt!
+  countPollVotes: BigInt!
   locked: BigDecimal!
   lastBlock: BigInt!
 }
