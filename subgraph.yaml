@@ -1,4 +1,4 @@
-specVersion: 0.0.1
+specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
@@ -36,6 +36,8 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - VoterRegistry
+        - ExecutiveVote
+        - PollVote
         - VoteProxy
         - Action
         - GovernanceInfo
@@ -52,4 +54,30 @@ dataSources:
         - event: LogNote(indexed bytes4,indexed address,indexed bytes32,indexed bytes32,uint256,bytes)
           topic0: '0xed08132900000000000000000000000000000000000000000000000000000000' # vote(address[])
           handler: handleVote
+        - event: Etch(indexed bytes32)
+          handler: handleEtch
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: PollingEmitter
+    network: mainnet
+    source:
+      address: '0xF9be8F0945acDdeeDaA64DFCA5Fe9629D0CF8E5D'
+      abi: PollingEmitter
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - VoterRegistry
+        - ExecutiveVote
+        - PollVote
+        - VoteProxy
+        - Action
+        - GovernanceInfo
+      abis:
+        - name: PollingEmitter
+          file: ./abis/PollingEmitter.json
+      eventHandlers:
+        - event: PollCreated(indexed address,uint256,indexed uint256,uint256,uint256,string,string)
+          handler: handlePollCreated
       file: ./src/mapping.ts

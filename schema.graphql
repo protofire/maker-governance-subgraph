@@ -1,8 +1,8 @@
 enum ActionType {
   LOCK
   FREE
-  EXECUTIVE_VOTE
-  POLL_VOTE
+  CRETATE_EXECUTIVE_VOTE
+  CRETATE_POLL_VOTE
 }
 
 type VoterRegistry @entity {
@@ -14,13 +14,20 @@ type VoterRegistry @entity {
 
 type ExecutiveVote @entity {
   id: ID!
-  locked: BigDecimal!
-  voters: [VoterRegistry!]!
+  slate: Bytes!
+  addresses: [Bytes!]
 }
 
 type PollVote @entity {
   id: ID!
-  voters: [VoterRegistry!]!
+  creator: Bytes,
+  blockCreated: BigInt!,
+  pollId: BigInt!,
+  startDate: BigInt!,
+  endDate: BigInt!,
+  multiHash: String,
+  url: String
+
 }
 
 type VoteProxy @entity {
