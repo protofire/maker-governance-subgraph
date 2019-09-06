@@ -12,13 +12,28 @@ type VoterRegistry @entity {
   voteProxies: [VoteProxy!]! @derivedFrom(field: "owner")
 }
 
-type ExecutiveVote @entity {
+type VoteProxy @entity {
   id: ID!
-  slate: Bytes!
-  addresses: [Bytes!]
+  locked: BigDecimal!
+  owner: VoterRegistry!
+  " Action timestamp as seconds (time) "
+  timestamp: BigInt!
+  address: Bytes!
 }
 
-type PollVote @entity {
+type Slate @entity {
+  id: ID!
+  yays: [Bytes!]
+}
+
+type Spell @entity {
+  " ID represent the contract address "
+  id: ID!
+  timestamp: BigInt!
+  casted: BigInt
+}
+
+type Poll @entity {
   id: ID!
   creator: Bytes,
   blockCreated: BigInt!,
@@ -27,16 +42,6 @@ type PollVote @entity {
   endDate: BigInt!,
   multiHash: String,
   url: String
-
-}
-
-type VoteProxy @entity {
-  id: ID!
-  locked: BigDecimal!
-  owner: VoterRegistry!
-  " Action timestamp as seconds (time) "
-  timestamp: BigInt!
-  address: Bytes!
 }
 
 type Action @entity {
@@ -55,8 +60,9 @@ type Action @entity {
 type GovernanceInfo @entity {
   id: ID!
   countVoters: BigInt!
-  countExecutiveVotes: BigInt!
-  countPollVotes: BigInt!
+  countSlates: BigInt!
+  countSpells: BigInt!
+  countPolls: BigInt!
   locked: BigDecimal!
   lastBlock: BigInt!
 }
