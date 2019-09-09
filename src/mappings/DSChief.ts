@@ -111,8 +111,11 @@ export function handleEtch(event: Etch): void {
     let spellAddress = slateResponse.value
     let spell = Spell.load(spellAddress.toHexString())
 
-    // FIXME - Remove address check once https://github.com/graphprotocol/support/issues/30 gets fixed
-    if (spell == null && spellAddress.toHex() != '0x483574d869bc34d2131032e65a3114a901928e91') {
+    // FIXME - Remove address blacklist check once https://github.com/graphprotocol/support/issues/30 gets fixed
+    if (spell == null && (
+      spellAddress.toHex() != '0x483574d869bc34d2131032e65a3114a901928e91' ||
+      spellAddress.toHex() != '0xe7bbc8fea57a92fc307d650d78e5481b25ccedff'
+    )) {
       spell = new Spell(spellAddress.toHexString())
       spell.timestamp = event.block.timestamp
 
