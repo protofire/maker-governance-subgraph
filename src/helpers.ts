@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt, Bytes } from '@graphprotocol/graph-ts'
+import { Address, BigDecimal, BigInt, Bytes, EthereumBlock } from '@graphprotocol/graph-ts'
 import { GovernanceInfo } from '../generated/schema'
 
 let PRECISION = BigDecimal.fromString('1000000000000000000') // 10^18
@@ -41,7 +41,17 @@ export function getGovernanceInfoEntity(): GovernanceInfo {
     entity.countPolls = BIGINT_ZERO
     entity.locked = BIGDECIMAL_ZERO
     entity.lastBlock = BIGINT_ZERO
+    entity.lastSynced = BIGINT_ZERO
   }
 
   return entity as GovernanceInfo
+}
+
+export function updateGovernanceInfoEntity(block: EthereumBlock, governanceInfo: GovernanceInfo = getGovernanceInfoEntity()): void {
+  if (governanceInfo == null) {
+    governanceInfo = getGovernanceInfoEntity()
+  }
+  governanceInfo.lastBlock = block.number
+  governanceInfo.lastSynced = block.timestamp
+  governanceInfo.save()
 }

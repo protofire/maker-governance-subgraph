@@ -2,6 +2,7 @@ import { log } from '@graphprotocol/graph-ts'
 
 import { DSSpell, LogNote } from '../../generated/templates/DSSpell/DSSpell'
 import { Spell } from '../../generated/schema'
+import { updateGovernanceInfoEntity } from '../helpers';
 
 export function handleCast(event: LogNote): void {
   let contract = DSSpell.bind(event.address)
@@ -15,4 +16,6 @@ export function handleCast(event: LogNote): void {
     spellEntity.casted = event.block.timestamp
     spellEntity.save()
   }
+
+  updateGovernanceInfoEntity(event.block)
 }

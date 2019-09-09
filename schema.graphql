@@ -1,6 +1,8 @@
 enum ActionType {
   LOCK
   FREE
+  LIFT
+  VOTE
   CRETATE_EXECUTIVE_VOTE
   CRETATE_POLL_VOTE
 }
@@ -13,24 +15,34 @@ type VoterRegistry @entity {
 }
 
 type VoteProxy @entity {
+  " VoteProxy address"
   id: ID!
+  " Amount of loked MKR"
   locked: BigDecimal!
   owner: VoterRegistry!
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
-  address: Bytes!
+  " Its currents voted slate"
+  votedSlate: Slate
 }
 
 type Slate @entity {
   id: ID!
   yays: [Bytes!]
+  " Timestamp when the slate was created"
+  timestamp: BigInt!
+  votedBy: [VoteProxy!] @derivedFrom(field: "votedSlate")
 }
 
 type Spell @entity {
   " ID represent the contract address "
   id: ID!
+  " Timestamp when the spell voted by the first time"
   timestamp: BigInt!
+  " Timestamp when the spell is casted"
   casted: BigInt
+  " How much MKR it has when the spell is lifted to hat"
+  approval: BigInt
 }
 
 type Poll @entity {
@@ -46,11 +58,15 @@ type Poll @entity {
 
 type Action @entity {
   id: ID!
-  " Action name (act) "
   sender: Bytes!
+  " Action name (act) "
   type: ActionType!
   " Action value (arg) "
   wad: BigDecimal
+  " New Hat"
+  hat: Bytes
+  " Votes"
+  yays: [Bytes!]
   " Transaction hash (tx) "
   transactionHash: Bytes!
   " Action timestamp as seconds (time) "
@@ -65,4 +81,6 @@ type GovernanceInfo @entity {
   countPolls: BigInt!
   locked: BigDecimal!
   lastBlock: BigInt!
+  lastSynced: BigInt!
+  hat: Bytes!
 }

@@ -3,7 +3,7 @@ import { log } from '@graphprotocol/graph-ts'
 import { PollCreated } from '../../generated/PollingEmitter/PollingEmitter'
 import { Action, Poll } from '../../generated/schema'
 
-import { BIGINT_ONE, getGovernanceInfoEntity } from '../helpers'
+import { BIGINT_ONE, getGovernanceInfoEntity, updateGovernanceInfoEntity } from '../helpers'
 
 export function handlePollCreated(event: PollCreated): void {
   let poll = new Poll(
@@ -31,6 +31,7 @@ export function handlePollCreated(event: PollCreated): void {
 
   let governanceInfo = getGovernanceInfoEntity()
   governanceInfo.countPolls = governanceInfo.countPolls.plus(BIGINT_ONE)
-  governanceInfo.lastBlock = event.block.number
   governanceInfo.save()
+
+  updateGovernanceInfoEntity(event.block)
 }
