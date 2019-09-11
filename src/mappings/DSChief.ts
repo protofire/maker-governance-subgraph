@@ -1,20 +1,44 @@
-import { log, BigInt, Bytes, Address, BigDecimal } from '@graphprotocol/graph-ts'
+import { log, BigInt, Bytes, Address, BigDecimal, crypto, EthereumBlock } from '@graphprotocol/graph-ts'
 
 import { LogNote, DSChief, Etch } from '../../generated/DSChief/DSChief'
 import { DSSpell } from '../../generated/DSChief/DSSpell'
 import { DSSpell as DSSpellTemplate } from '../../generated/templates'
-import { VoteProxy, Action, Slate, Spell } from '../../generated/schema'
+import { AddressVoter, VoteProxy, Action, Slate, Spell, GovernanceInfo } from '../../generated/schema'
 
 import {BIGINT_ONE, toBigDecimal, isSaiMom, getGovernanceInfoEntity, updateGovernanceInfoEntity, toAddress } from '../helpers'
 
 export function handleLock(event: LogNote): void {
-  let voteProxy = getLogNoteData(event, 'handleLock')
-  if (voteProxy == null) return
+  let sender = event.params.guy.toHex()
   let locked = toBigDecimal(event.params.foo)
-  voteProxy.locked = voteProxy.locked.plus(locked)
-  voteProxy.save()
+
+  let voteProxy = VoteProxy.load(sender)
+  let addressVoter = AddressVoter.load(sender)
 
   let governanceInfo = getGovernanceInfoEntity()
+
+  if (voteProxy != null) {
+    voteProxy.locked = voteProxy.locked.plus(locked)
+    voteProxy.save()
+  } else if (addressVoter != null) {
+    addressVoter.locked = addressVoter.locked.plus(locked)
+    addressVoter.save()
+  } else {
+    addressVoter = new AddressVoter(sender)
+    addressVoter.locked = locked
+    addressVoter.timestamp = event.block.timestamp
+    addressVoter.save()
+
+    let action = new Action(
+      event.transaction.hash.toHex() + '-' + event.logIndex.toString() + '-' + '-VOTER',
+    )
+    action.type = 'VOTER'
+    action.voterAddress = event.params.guy
+    action.timestamp = event.block.timestamp
+    action.save()
+
+    governanceInfo.countAddresses = governanceInfo.countAddresses.plus(BIGINT_ONE)
+  }
+
   governanceInfo.locked = governanceInfo.locked.plus(locked)
 
   let action = new Action(
@@ -27,15 +51,28 @@ export function handleLock(event: LogNote): void {
   action.timestamp = event.block.timestamp
   action.save()
 
+  governanceInfo.countLock = governanceInfo.countLock.plus(BIGINT_ONE)
+
   updateGovernanceInfoEntity(event.block, governanceInfo)
 }
 
 export function handleFree(event: LogNote): void {
-  let voteProxy = getLogNoteData(event, 'handleFree')
-  if (voteProxy == null) return
+  let sender = event.params.guy.toHex()
   let free = toBigDecimal(event.params.foo)
-  voteProxy.locked = voteProxy.locked.minus(free)
-  voteProxy.save()
+
+  let voteProxy = VoteProxy.load(sender)
+  let addressVoter = AddressVoter.load(sender)
+
+  if (voteProxy != null) {
+    voteProxy.locked = voteProxy.locked.minus(free)
+    voteProxy.save()
+  } else if (addressVoter != null) {
+    addressVoter.locked = addressVoter.locked.minus(free)
+    addressVoter.save()
+  } else {
+    log.error('handleFree: No VoteProxy nor addressVoter id {} found.', [sender])
+    return
+  }
 
   let governanceInfo = getGovernanceInfoEntity()
   governanceInfo.locked = governanceInfo.locked.minus(free)
@@ -50,6 +87,8 @@ export function handleFree(event: LogNote): void {
   action.timestamp = event.block.timestamp
   action.save()
 
+  governanceInfo.countFree = governanceInfo.countFree.plus(BIGINT_ONE)
+
   updateGovernanceInfoEntity(event.block, governanceInfo)
 }
 
@@ -57,25 +96,67 @@ export function handleVote(event: LogNote): void {
   let sender = event.params.guy
   let slateID = event.params.foo
 
-  log.error('HANDLEVOTE: PROXY {} SLATE {}', [sender.toHex(), slateID.toHex()])
+  handleSlate(slateID, event.address, event.block)
 
   let slate = Slate.load(slateID.toHex())
   let voteProxy = VoteProxy.load(sender.toHex())
-
-  // FIXME - There are cases where vote is coming directly from a wallet address. We need to define how to handle such cases
-  if (voteProxy == null) {
-    log.error('handleVote: VoteProxy with id {} not found.', [sender.toHex()])
-    return
-  }
+  let addressVoter = AddressVoter.load(sender.toHex())
 
   if (slate == null) {
     log.error('handleVote: Slate with id {} not found.', [slateID.toHex()])
     return
   }
 
-  voteProxy.votedSlate = slate.id
+  if (voteProxy != null) {
+    voteProxy.votedSlate = slate.id
+    voteProxy.save()
+  } else if (addressVoter != null) {
+    addressVoter.votedSlate = slate.id
+    addressVoter.save()
+  } else {
+    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [slateID.toHex()])
+    return
+  }
 
-  voteProxy.save()
+  let action = new Action(
+    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+  )
+  action.type = 'VOTE'
+  action.sender = sender
+  action.yays = slate.yays
+  action.transactionHash = event.transaction.hash
+  action.timestamp = event.block.timestamp
+  action.save()
+
+  updateGovernanceInfoEntity(event.block)
+}
+
+export function handleVoteArray(event: LogNote): void {
+  let sender = event.params.guy
+  let dsChief = DSChief.bind(event.address)
+  let slateID = dsChief.votes(sender)
+
+  handleSlate(slateID, event.address, event.block)
+
+  let slate = Slate.load(slateID.toHex())
+  let voteProxy = VoteProxy.load(sender.toHex())
+  let addressVoter = AddressVoter.load(sender.toHex())
+
+  if (slate == null) {
+    log.error('handleVote: Slate with id {} not found.', [slateID.toHex()])
+    return
+  }
+
+  if (voteProxy != null) {
+    voteProxy.votedSlate = slate.id
+    voteProxy.save()
+  } else if (addressVoter != null) {
+    addressVoter.votedSlate = slate.id
+    addressVoter.save()
+  } else {
+    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [slateID.toHex()])
+    return
+  }
 
   let action = new Action(
     event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
@@ -92,17 +173,29 @@ export function handleVote(event: LogNote): void {
 
 export function handleEtch(event: Etch): void {
   let slateID = event.params.slate
-  let slate = Slate.load(slateID.toHex())
-  if (slate == null) {
-    slate = new Slate(slateID.toHex())
-    slate.yays = new Array<Bytes>()
-    slate.timestamp = event.block.timestamp
+
+  handleSlate(slateID, event.address, event.block)
+
+  let action = new Action(
+    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+  )
+  action.type = 'ETCH'
+  action.sender = event.transaction.from // TODO - check this
+  action.transactionHash = event.transaction.hash
+  action.timestamp = event.block.timestamp
+  action.save()
+}
+
+function handleSlate(slateID: Bytes, chiefAddress: Address, block: EthereumBlock, governanceInfo: GovernanceInfo = getGovernanceInfoEntity()): void {
+  if (Slate.load(slateID.toHex()) != null) {
+    return
   }
 
-  let governanceInfo = getGovernanceInfoEntity()
-  let dsChief = DSChief.bind(event.address)
+  let slate = new Slate(slateID.toHex())
+  slate.yays = new Array<Bytes>()
+  slate.timestamp = block.timestamp
 
-  log.error('TRY_SLATES {} ', [slateID.toHexString()])
+  let dsChief = DSChief.bind(chiefAddress)
 
   let i = 0
   let slateResponse = dsChief.try_slates(slateID, BigInt.fromI32(i))
@@ -113,46 +206,33 @@ export function handleEtch(event: Etch): void {
 
     // FIXME - Remove address blacklist check once https://github.com/graphprotocol/support/issues/30 gets fixed
     if (spell == null && (
-      spellAddress.toHex() != '0x483574d869bc34d2131032e65a3114a901928e91' ||
+      spellAddress.toHex() != '0x483574d869bc34d2131032e65a3114a901928e91' &&
       spellAddress.toHex() != '0xe7bbc8fea57a92fc307d650d78e5481b25ccedff'
     )) {
       spell = new Spell(spellAddress.toHexString())
-      spell.timestamp = event.block.timestamp
+      spell.timestamp = block.timestamp
 
-      log.error('BEFORE BIND {} ', [spellAddress.toHexString()])
       let dsSpell = DSSpell.bind(spellAddress)
-      log.error('TRY_WHOM {} ', [spellAddress.toHexString()])
       let dsResponse = dsSpell.try_whom()
-      log.error('REVERTED {} WHOM {}', [dsResponse.reverted ? 'YES' : 'NO', dsResponse.reverted ? 'REV' : dsResponse.value.toHexString()])
 
       if (!dsResponse.reverted && isSaiMom(dsResponse.value)) {
         // Start traking this DS-Spell
         DSSpellTemplate.create(spellAddress)
-        // Save spell as slate's yay
-        slate.yays.push(spellAddress)
         // Update spells count
         governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
         spell.save()
       }
     }
-
+    // Save slate's yay (even if it isn't a spell)
+    slate.yays = slate.yays.concat([spellAddress])
     slateResponse = dsChief.try_slates(slateID, BigInt.fromI32(++i))
   }
 
   slate.save()
 
-  let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
-  )
-  action.type = 'CRETATE_EXECUTIVE_VOTE'
-  action.sender = event.address // TODO - check this
-  action.transactionHash = event.transaction.hash
-  action.timestamp = event.block.timestamp
-  action.save()
-
   governanceInfo.countSlates = governanceInfo.countSlates.plus(BIGINT_ONE)
-  updateGovernanceInfoEntity(event.block, governanceInfo)
+  updateGovernanceInfoEntity(block, governanceInfo)
 }
 
 export function handleLift(event: LogNote): void {
@@ -161,10 +241,12 @@ export function handleLift(event: LogNote): void {
   let dsChief = DSChief.bind(event.address)
 
   let spellEntity = Spell.load(whom.toHexString())
-  log.error('TRYAPPROVALS {}', [whom.toHexString()])
-  let approval = dsChief.approvals(Address.fromString(whom.toHex()))
+  let approval = dsChief.approvals(whom)
+
   // How much MKR it has when the spell is lifted to hat
-  spellEntity.approval = approval
+  spellEntity.lifted = event.block.timestamp
+  spellEntity.liftedWith = approval
+  spellEntity.save()
 
   let governanceInfo = getGovernanceInfoEntity()
   governanceInfo.hat = whom
@@ -181,14 +263,4 @@ export function handleLift(event: LogNote): void {
   action.save()
 
   updateGovernanceInfoEntity(event.block)
-}
-
-function getLogNoteData(event: LogNote, method: string): VoteProxy {
-  let voteProxyId = event.params.guy.toHex()
-
-  let voteProxy = VoteProxy.load(voteProxyId)
-  if (voteProxy == null)
-    log.error('{}: VoteProxy with id {} not found.', [method, voteProxyId])
-
-  return voteProxy as VoteProxy
 }

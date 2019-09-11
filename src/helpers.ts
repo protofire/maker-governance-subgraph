@@ -35,10 +35,14 @@ export function getGovernanceInfoEntity(): GovernanceInfo {
 
   if (entity == null) {
     entity = new GovernanceInfo(id)
-    entity.countVoters = BIGINT_ZERO
+    entity.countProxies = BIGINT_ZERO
+    entity.countAddresses = BIGINT_ZERO
     entity.countSlates = BIGINT_ZERO
     entity.countSpells = BIGINT_ZERO
+    entity.countLock = BIGINT_ZERO
+    entity.countFree = BIGINT_ZERO
     entity.countPolls = BIGINT_ZERO
+    entity.countCasted = BIGINT_ZERO
     entity.locked = BIGDECIMAL_ZERO
     entity.lastBlock = BIGINT_ZERO
     entity.lastSynced = BIGINT_ZERO

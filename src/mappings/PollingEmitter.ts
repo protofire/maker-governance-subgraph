@@ -23,15 +23,14 @@ export function handlePollCreated(event: PollCreated): void {
   let action = new Action(
     event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
   )
-  action.type = 'CRETATE_POLL_VOTE'
-  action.sender = event.address // TODO - check this
+  action.type = 'POLL_CREATED'
+  action.sender = event.transaction.from // TODO - check this
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
 
   let governanceInfo = getGovernanceInfoEntity()
   governanceInfo.countPolls = governanceInfo.countPolls.plus(BIGINT_ONE)
-  governanceInfo.save()
 
-  updateGovernanceInfoEntity(event.block)
+  updateGovernanceInfoEntity(event.block, governanceInfo)
 }
