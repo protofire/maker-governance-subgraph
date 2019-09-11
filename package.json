@@ -4,8 +4,7 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "auth": "graph auth https://api.thegraph.com/deploy/ 15154bcb9c754e40a2c2b87c3a7bb1ab",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ lmcorbalan/makerdao-governance",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ protofire/makerdao-governance",
     "create-local": "graph create --node http://localhost:8020/ protofire/makerdao-governance",
     "remove-local": "graph remove --node http://localhost:8020/ protofire/makerdao-governance",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 protofire/makerdao-governance"
