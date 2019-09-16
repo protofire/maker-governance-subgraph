@@ -1,8 +1,12 @@
 enum ActionType {
   LOCK
   FREE
-  EXECUTIVE_VOTE
-  POLL_VOTE
+  LIFT
+  VOTE
+  VOTER
+  ETCH
+  CAST
+  POLL_CREATED
 }
 
 type VoterRegistry @entity {
@@ -12,33 +16,83 @@ type VoterRegistry @entity {
   voteProxies: [VoteProxy!]! @derivedFrom(field: "owner")
 }
 
-type ExecutiveVote @entity {
-  id: ID!
-  locked: BigDecimal!
-  voters: [VoterRegistry!]!
-}
-
-type PollVote @entity {
-  id: ID!
-  voters: [VoterRegistry!]!
-}
-
 type VoteProxy @entity {
+  " VoteProxy address"
   id: ID!
+  " Amount of loked MKR"
   locked: BigDecimal!
   owner: VoterRegistry!
+  " Its currents voted slate"
+  votedSlate: Slate
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
-  address: Bytes!
+}
+
+type AddressVoter @entity {
+  " Address"
+  id: ID!
+  " Amount of loked MKR"
+  locked: BigDecimal!
+  " Its currents voted slate"
+  votedSlate: Slate
+  " Action timestamp as seconds (time) "
+  timestamp: BigInt!
+}
+
+type Slate @entity {
+  id: ID!
+  yays: [Bytes!]
+  " Timestamp when the slate was created"
+  timestamp: BigInt!
+  votedByPwoxies: [VoteProxy!] @derivedFrom(field: "votedSlate")
+  votedByAddresses: [AddressVoter!] @derivedFrom(field: "votedSlate")
+}
+
+type Spell @entity {
+  " ID represent the contract address "
+  id: ID!
+  " Timestamp when the spell voted by the first time"
+  timestamp: BigInt!
+  " Timestamp when the spell is casted"
+  casted: BigInt
+  " How much MKR it has when the spell is casted"
+  castedWith: BigInt
+  " Timestamp when the spell is casted"
+  lifted: BigInt
+  " How much MKR it has when the spell is lifted to hat"
+  liftedWith: BigInt
+}
+
+type Poll @entity {
+  id: ID!
+  creator: Bytes,
+  blockCreated: BigInt!,
+  pollId: BigInt!,
+  startDate: BigInt!,
+  endDate: BigInt!,
+  multiHash: String,
+  url: String
 }
 
 type Action @entity {
   id: ID!
-  " Action name (act) "
   sender: Bytes!
+  " Action name (act) "
   type: ActionType!
   " Action value (arg) "
   wad: BigDecimal
+  " New Hat"
+  hat: Bytes
+  " Spell casted"
+  spell: Bytes
+  " Votes"
+  yays: [Bytes!]
+  " Slate voted"
+  slate: Bytes
+  " New voter address"
+  voterAddress: Bytes
+  " Is the new voter a VoteProxy"
+  isVoteProxy: Boolean
   " Transaction hash (tx) "
   transactionHash: Bytes!
   " Action timestamp as seconds (time) "
@@ -47,9 +101,16 @@ type Action @entity {
 
 type GovernanceInfo @entity {
   id: ID!
-  countVoters: BigInt!
-  countExecutiveVotes: BigInt!
-  countPollVotes: BigInt!
+  countProxies: BigInt!
+  countAddresses: BigInt!
+  countSlates: BigInt!
+  countSpells: BigInt!
+  countLock: BigInt!
+  countFree: BigInt!
+  countPolls: BigInt!
+  countCasted: BigInt!
   locked: BigDecimal!
   lastBlock: BigInt!
+  lastSynced: BigInt!
+  hat: Bytes!
 }
