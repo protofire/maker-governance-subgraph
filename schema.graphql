@@ -9,6 +9,13 @@ enum ActionType {
   POLL_CREATED
 }
 
+enum VotingActionType {
+  ADD
+  REMOVE
+  LOCK
+  FREE
+}
+
 type VoterRegistry @entity {
   id: ID!
   coldAddress: Bytes!
@@ -44,7 +51,7 @@ type Slate @entity {
   yays: [Bytes!]
   " Timestamp when the slate was created"
   timestamp: BigInt!
-  votedByPwoxies: [VoteProxy!] @derivedFrom(field: "votedSlate")
+  votedByProxies: [VoteProxy!] @derivedFrom(field: "votedSlate")
   votedByAddresses: [AddressVoter!] @derivedFrom(field: "votedSlate")
 }
 
@@ -61,6 +68,30 @@ type Spell @entity {
   lifted: BigInt
   " How much MKR it has when the spell is lifted to hat"
   liftedWith: BigInt
+  " Total MKR supporting this spell"
+  approvals: BigInt!
+  " Total voters supporting this spell"
+  totalVotes: BigInt
+
+  timeLineCount: BigInt!
+  timeLine: [VotingAction!] @derivedFrom(field: "spell")
+}
+
+type VotingAction @entity {
+  id: ID!
+  sender: Bytes!
+  " Spell related to this action"
+  spell: Spell
+  " Action name (act) "
+  type: VotingActionType!
+  " Amount of loked MKR the sender had at the moment this action is performed"
+  locked: BigInt
+  " Amount of loked MKR the locked or withdrawn"
+  wad: BigInt
+  " Transaction hash (tx) "
+  transactionHash: Bytes!
+  " Action timestamp as seconds (time) "
+  timestamp: BigInt!
 }
 
 type Poll @entity {

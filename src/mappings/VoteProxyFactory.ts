@@ -24,9 +24,10 @@ export function handleLinkConfirmed(event: LinkConfirmedEvent): void {
   governanceInfo.countProxies = governanceInfo.countProxies.plus(BIGINT_ONE)
 
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString() + '-' + '-VOTER',
+    event.transaction.hash.toHex() + '-' + event.logIndex.toString() + '-PROXY-VOTER',
   )
   action.type = 'VOTER'
+  action.sender = event.transaction.from
   action.voterAddress = event.params.voteProxy
   action.isVoteProxy = true
   action.timestamp = event.block.timestamp

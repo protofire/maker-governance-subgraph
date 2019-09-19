@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt, Bytes, EthereumBlock } from '@graphprotocol/graph-ts'
+import { Address, BigDecimal, BigInt, Bytes, EthereumBlock, Value } from '@graphprotocol/graph-ts'
 import { GovernanceInfo } from '../generated/schema'
 
 let PRECISION = BigDecimal.fromString('1000000000000000000') // 10^18
@@ -17,6 +17,10 @@ export function toBigInt(value: Bytes, bigEndian: boolean = true): BigInt {
   let val = bigEndian ? (value.reverse() as Bytes) : value
 
   return BigInt.fromUnsignedBytes(val)
+}
+
+export function fromBigDecimalToBigInt(value: BigDecimal): BigInt {
+  return value.times(PRECISION).digits
 }
 
 export function toBigDecimal(value: Bytes, bigEndian: boolean = true): BigDecimal {
