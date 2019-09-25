@@ -3,7 +3,12 @@ import { log } from '@graphprotocol/graph-ts'
 import { LinkConfirmed as LinkConfirmedEvent } from '../../generated/VoteProxyFactory/VoteProxyFactory'
 import { VoteProxy, VoterRegistry, Action } from '../../generated/schema'
 
-import { BIGDECIMAL_ZERO, BIGINT_ONE, getGovernanceInfoEntity, updateGovernanceInfoEntity } from '../helpers'
+import {
+  BIGDECIMAL_ZERO,
+  BIGINT_ONE,
+  getGovernanceInfoEntity,
+  updateGovernanceInfoEntity,
+} from '../helpers'
 
 export function handleLinkConfirmed(event: LinkConfirmedEvent): void {
   let voteRegistry = new VoterRegistry(
@@ -24,7 +29,11 @@ export function handleLinkConfirmed(event: LinkConfirmedEvent): void {
   governanceInfo.countProxies = governanceInfo.countProxies.plus(BIGINT_ONE)
 
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString() + '-PROXY-VOTER',
+    'PROXY-VOTER' +
+      '-' +
+      event.transaction.hash.toHex() +
+      '-' +
+      event.logIndex.toString(),
   )
   action.type = 'VOTER'
   action.sender = event.transaction.from

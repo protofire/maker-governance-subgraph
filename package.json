@@ -4,13 +4,30 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ protofire/makerdao-governance",
-    "create-local": "graph create --node http://localhost:8020/ protofire/makerdao-governance",
-    "remove-local": "graph remove --node http://localhost:8020/ protofire/makerdao-governance",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 protofire/makerdao-governance"
+    "auth": "graph auth https://api.thegraph.com/deploy/ 9f6e4dee6e634d508edf00220299aa7b",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ lmcorbalan/makerdao-governance",
+    "create-local": "graph create --node http://localhost:8020/ lmcorbalan/makerdao-governance",
+    "remove-local": "graph remove --node http://localhost:8020/ lmcorbalan/makerdao-governance",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 lmcorbalan/makerdao-governance"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn build && lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,json,graphql,md}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.15.0",
     "@graphprotocol/graph-ts": "0.15.0"
+  },
+  "devDependencies": {
+    "husky": "^3.0.5",
+    "lint-staged": "^9.3.0",
+    "prettier": "^1.18.2"
   }
 }
