@@ -467,6 +467,7 @@ function saveAddAction(
         voteAction.locked = locked
         voteAction.sender = sender
         voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
         voteAction.transactionHash = event.transaction.hash
         voteAction.timestamp = event.block.timestamp
         voteAction.save()
@@ -500,6 +501,7 @@ function saveRemoveAction(
         voteAction.locked = locked
         voteAction.sender = sender
         voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
         voteAction.transactionHash = event.transaction.hash
         voteAction.timestamp = event.block.timestamp
         voteAction.save()
@@ -534,6 +536,7 @@ function saveLockAction(
 
         voteAction.sender = sender
         voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
         voteAction.transactionHash = event.transaction.hash
         voteAction.timestamp = event.block.timestamp
         voteAction.save()
@@ -567,6 +570,7 @@ function saveFreeAction(
 
         voteAction.sender = sender
         voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
         voteAction.transactionHash = event.transaction.hash
         voteAction.timestamp = event.block.timestamp
         voteAction.save()

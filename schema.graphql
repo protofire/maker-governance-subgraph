@@ -86,6 +86,8 @@ interface VotingAction {
   " Spell related to this action"
   spell: Spell
 
+  " Block number "
+  block: BigInt!
   transactionHash: Bytes!
   timestamp: BigInt!
 }
@@ -99,6 +101,8 @@ type AddAction implements VotingAction @entity {
   spell: Spell
   " Amount of loked MKR the sender had at the moment this action is performed"
   locked: BigDecimal!
+  " Block number "
+  block: BigInt!
   " Transaction hash (tx) "
   transactionHash: Bytes!
   " Action timestamp as seconds (time) "
@@ -114,6 +118,8 @@ type RemoveAction implements VotingAction @entity {
   spell: Spell
   " Amount of loked MKR the sender had at the moment this action is performed"
   locked: BigDecimal!
+  " Block number "
+  block: BigInt!
   " Transaction hash (tx) "
   transactionHash: Bytes!
   " Action timestamp as seconds (time) "
@@ -129,6 +135,8 @@ type LockAction implements VotingAction @entity {
   spell: Spell
   " Amount of MKR locked or withdrawn"
   wad: BigDecimal!
+  " Block number "
+  block: BigInt!
   " Transaction hash (tx) "
   transactionHash: Bytes!
   " Action timestamp as seconds (time) "
@@ -144,6 +152,8 @@ type FreeAction implements VotingAction @entity {
   spell: Spell
   " Amount of MKR locked or withdrawn"
   wad: BigDecimal!
+  " Block number "
+  block: BigInt!
   " Transaction hash (tx) "
   transactionHash: Bytes!
   " Action timestamp as seconds (time) "
