@@ -1,11 +1,42 @@
-import { log, BigInt, Bytes, Address, BigDecimal, crypto, EthereumBlock } from '@graphprotocol/graph-ts'
+import {
+  log,
+  BigInt,
+  Bytes,
+  Address,
+  BigDecimal,
+  crypto,
+  EthereumBlock,
+  Value,
+} from '@graphprotocol/graph-ts'
 
 import { LogNote, DSChief, Etch } from '../../generated/DSChief/DSChief'
 import { DSSpell } from '../../generated/DSChief/DSSpell'
 import { DSSpell as DSSpellTemplate } from '../../generated/templates'
-import { AddressVoter, VoteProxy, Action, Slate, Spell, GovernanceInfo } from '../../generated/schema'
+import {
+  AddressVoter,
+  VoteProxy,
+  Action,
+  Slate,
+  Spell,
+  GovernanceInfo,
+  AddAction,
+  RemoveAction,
+  LockAction,
+  FreeAction,
+} from '../../generated/schema'
 
-import {BIGINT_ONE, toBigDecimal, isSaiMom, getGovernanceInfoEntity, updateGovernanceInfoEntity, toAddress } from '../helpers'
+import {
+  BIGINT_ONE,
+  BIGINT_ZERO,
+  BIGDECIMAL_ZERO,
+  toBigDecimal,
+  fromBigDecimalToBigInt,
+  fromBigIntToBigDecimal,
+  isSaiMom,
+  getGovernanceInfoEntity,
+  updateGovernanceInfoEntity,
+  toAddress,
+} from '../helpers'
 
 export function handleLock(event: LogNote): void {
   let sender = event.params.guy.toHex()
@@ -14,14 +45,20 @@ export function handleLock(event: LogNote): void {
   let voteProxy = VoteProxy.load(sender)
   let addressVoter = AddressVoter.load(sender)
 
+  let votedSlate: string
+
   let governanceInfo = getGovernanceInfoEntity()
 
   if (voteProxy != null) {
     voteProxy.locked = voteProxy.locked.plus(locked)
     voteProxy.save()
+
+    votedSlate = voteProxy.votedSlate
   } else if (addressVoter != null) {
     addressVoter.locked = addressVoter.locked.plus(locked)
     addressVoter.save()
+
+    votedSlate = addressVoter.votedSlate
   } else {
     addressVoter = new AddressVoter(sender)
     addressVoter.locked = locked
@@ -29,7 +66,11 @@ export function handleLock(event: LogNote): void {
     addressVoter.save()
 
     let action = new Action(
-      event.transaction.hash.toHex() + '-' + event.logIndex.toString() + '-' + '-VOTER',
+      'ADDRESS-VOTER' +
+        '-' +
+        event.transaction.hash.toHex() +
+        '-' +
+        event.logIndex.toString(),
     )
     action.type = 'VOTER'
     action.voterAddress = event.params.guy
@@ -42,7 +83,7 @@ export function handleLock(event: LogNote): void {
   governanceInfo.locked = governanceInfo.locked.plus(locked)
 
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+    'LOCK' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
   )
   action.type = 'LOCK'
   action.sender = event.params.guy
@@ -50,6 +91,11 @@ export function handleLock(event: LogNote): void {
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
+
+  if (votedSlate !== null) {
+    let slate = Slate.load(votedSlate)
+    saveLockAction(slate.yays as Bytes[], event, locked, 'LOCK')
+  }
 
   governanceInfo.countLock = governanceInfo.countLock.plus(BIGINT_ONE)
 
@@ -63,12 +109,18 @@ export function handleFree(event: LogNote): void {
   let voteProxy = VoteProxy.load(sender)
   let addressVoter = AddressVoter.load(sender)
 
+  let votedSlate: string
+
   if (voteProxy != null) {
     voteProxy.locked = voteProxy.locked.minus(free)
     voteProxy.save()
+
+    votedSlate = voteProxy.votedSlate
   } else if (addressVoter != null) {
     addressVoter.locked = addressVoter.locked.minus(free)
     addressVoter.save()
+
+    votedSlate = addressVoter.votedSlate
   } else {
     log.error('handleFree: No VoteProxy nor addressVoter id {} found.', [sender])
     return
@@ -78,7 +130,7 @@ export function handleFree(event: LogNote): void {
   governanceInfo.locked = governanceInfo.locked.minus(free)
 
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+    'FREE' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
   )
   action.type = 'FREE'
   action.sender = event.params.guy
@@ -86,6 +138,11 @@ export function handleFree(event: LogNote): void {
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
+
+  if (votedSlate !== null) {
+    let slate = Slate.load(votedSlate)
+    saveFreeAction(slate.yays as Bytes[], event, free, 'FREE')
+  }
 
   governanceInfo.countFree = governanceInfo.countFree.plus(BIGINT_ONE)
 
@@ -95,6 +152,15 @@ export function handleFree(event: LogNote): void {
 export function handleVote(event: LogNote): void {
   let sender = event.params.guy
   let slateID = event.params.foo
+
+  log.error('handleVote: SENDER {} SLATE {} TANSACTION {}', [
+    sender.toHexString(),
+    slateID.toHexString(),
+    event.transaction.hash.toHexString(),
+  ])
+
+  let dsChief = DSChief.bind(event.address)
+  let locked = dsChief.deposits(sender)
 
   handleSlate(slateID, event.address, event.block)
 
@@ -107,19 +173,68 @@ export function handleVote(event: LogNote): void {
     return
   }
 
+  let newYays = new Array<string>()
+  for (let index = 0; index < slate.yays.length; index++) {
+    let yay = (slate.yays as Bytes[])[index]
+    if (yay !== null) {
+      newYays.push(yay.toHexString())
+    }
+  }
+  let prevVotedSlateId: string
+
   if (voteProxy != null) {
+    prevVotedSlateId = voteProxy.votedSlate
     voteProxy.votedSlate = slate.id
     voteProxy.save()
   } else if (addressVoter != null) {
+    prevVotedSlateId = addressVoter.votedSlate
     addressVoter.votedSlate = slate.id
     addressVoter.save()
   } else {
-    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [slateID.toHex()])
+    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [sender.toHex()])
     return
   }
 
+  let prevVotedSlate = Slate.load(prevVotedSlateId)
+  let prevYays = new Array<string>()
+  // let prevYays = new Array<Bytes>()
+  for (let index = 0; index < prevVotedSlate.yays.length; index++) {
+    let yay = (prevVotedSlate.yays as Bytes[])[index]
+    if (yay !== null) {
+      prevYays.push(yay.toHexString())
+    }
+  }
+
+  let addedYays = new Array<Bytes>()
+  if (newYays !== null) {
+    for (let index = 0; index < newYays.length; index++) {
+      let yay = (newYays as string[])[index]
+      if (yay !== null) {
+        if (prevYays.indexOf(yay) == -1) {
+          addedYays.push(Bytes.fromHexString(yay as string) as Bytes)
+        }
+      }
+    }
+  }
+
+  saveAddAction(addedYays, event, fromBigIntToBigDecimal(locked), 'ADD')
+
+  let removedYays = new Array<Bytes>()
+  if (prevYays != null) {
+    for (let index = 0; index < prevYays.length; index++) {
+      let yay = (prevYays as string[])[index]
+      if (yay !== null) {
+        if (newYays.indexOf(yay) == -1) {
+          removedYays.push(Bytes.fromHexString(yay as string) as Bytes)
+        }
+      }
+    }
+  }
+
+  saveRemoveAction(removedYays, event, fromBigIntToBigDecimal(locked), 'REMOVE')
+
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+    'VOTE' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
   )
   action.type = 'VOTE'
   action.sender = sender
@@ -135,6 +250,13 @@ export function handleVoteArray(event: LogNote): void {
   let sender = event.params.guy
   let dsChief = DSChief.bind(event.address)
   let slateID = dsChief.votes(sender)
+  let locked = dsChief.deposits(sender)
+
+  log.error('handleVoteArray: SENDER {} SLATE {} TANSACTION {}', [
+    sender.toHexString(),
+    slateID.toHexString(),
+    event.transaction.hash.toHexString(),
+  ])
 
   handleSlate(slateID, event.address, event.block)
 
@@ -147,19 +269,69 @@ export function handleVoteArray(event: LogNote): void {
     return
   }
 
+  let newYays = new Array<string>()
+  for (let index = 0; index < slate.yays.length; index++) {
+    let yay = (slate.yays as Bytes[])[index]
+    if (yay !== null) {
+      newYays.push(yay.toHexString())
+    }
+  }
+  let prevVotedSlateId: string
+
   if (voteProxy != null) {
+    prevVotedSlateId = voteProxy.votedSlate
     voteProxy.votedSlate = slate.id
     voteProxy.save()
   } else if (addressVoter != null) {
+    prevVotedSlateId = addressVoter.votedSlate
     addressVoter.votedSlate = slate.id
     addressVoter.save()
   } else {
-    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [slateID.toHex()])
+    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [sender.toHex()])
     return
   }
 
+  let prevVotedSlate = Slate.load(prevVotedSlateId)
+  let prevYays = new Array<string>()
+  for (let index = 0; index < prevVotedSlate.yays.length; index++) {
+    let yay = (prevVotedSlate.yays as Bytes[])[index]
+    if (yay !== null) {
+      prevYays.push(yay.toHexString())
+    }
+  }
+
+  let addedYays = new Array<Bytes>()
+  if (newYays !== null) {
+    for (let index = 0; index < newYays.length; index++) {
+      let yay = (newYays as string[])[index]
+      if (yay !== null) {
+        if (prevYays.indexOf(yay) == -1) {
+          addedYays.push(Bytes.fromHexString(yay as string) as Bytes)
+        }
+      }
+    }
+  }
+
+  saveAddAction(addedYays, event, fromBigIntToBigDecimal(locked), 'ADD-ARRAY')
+
+  let removedYays = new Array<Bytes>()
+  if (prevYays != null) {
+    for (let index = 0; index < prevYays.length; index++) {
+      let yay = (prevYays as string[])[index]
+      if (yay !== null) {
+        if (newYays.indexOf(yay) == -1) {
+          let test = Bytes.fromHexString(yay as string) as Bytes
+          log.error('handleVoteArray REMOVE yay {} trans {}', [yay, test.toHexString()])
+          removedYays.push(Bytes.fromHexString(yay as string) as Bytes)
+        }
+      }
+    }
+  }
+
+  saveRemoveAction(removedYays, event, fromBigIntToBigDecimal(locked), 'REMOVE-ARRAY')
+
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+    'VOTE' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
   )
   action.type = 'VOTE'
   action.sender = sender
@@ -177,16 +349,21 @@ export function handleEtch(event: Etch): void {
   handleSlate(slateID, event.address, event.block)
 
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+    'ETCH' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
   )
   action.type = 'ETCH'
-  action.sender = event.transaction.from // TODO - check this
+  action.sender = event.transaction.from
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
 }
 
-function handleSlate(slateID: Bytes, chiefAddress: Address, block: EthereumBlock, governanceInfo: GovernanceInfo = getGovernanceInfoEntity()): void {
+function handleSlate(
+  slateID: Bytes,
+  chiefAddress: Address,
+  block: EthereumBlock,
+  governanceInfo: GovernanceInfo = getGovernanceInfoEntity(),
+): void {
   if (Slate.load(slateID.toHex()) != null) {
     return
   }
@@ -205,12 +382,16 @@ function handleSlate(slateID: Bytes, chiefAddress: Address, block: EthereumBlock
     let spell = Spell.load(spellAddress.toHexString())
 
     // FIXME - Remove address blacklist check once https://github.com/graphprotocol/support/issues/30 gets fixed
-    if (spell == null && (
-      spellAddress.toHex() != '0x483574d869bc34d2131032e65a3114a901928e91' &&
-      spellAddress.toHex() != '0xe7bbc8fea57a92fc307d650d78e5481b25ccedff'
-    )) {
+    if (
+      spell == null &&
+      (spellAddress.toHex() != '0x483574d869bc34d2131032e65a3114a901928e91' &&
+        spellAddress.toHex() != '0xe7bbc8fea57a92fc307d650d78e5481b25ccedff')
+    ) {
       spell = new Spell(spellAddress.toHexString())
       spell.timestamp = block.timestamp
+      spell.approvals = BIGDECIMAL_ZERO
+      spell.totalVotes = BIGINT_ZERO
+      spell.timeLineCount = BIGINT_ZERO
 
       let dsSpell = DSSpell.bind(spellAddress)
       let dsResponse = dsSpell.try_whom()
@@ -245,7 +426,7 @@ export function handleLift(event: LogNote): void {
 
   // How much MKR it has when the spell is lifted to hat
   spellEntity.lifted = event.block.timestamp
-  spellEntity.liftedWith = approval
+  spellEntity.liftedWith = fromBigIntToBigDecimal(approval)
   spellEntity.save()
 
   let governanceInfo = getGovernanceInfoEntity()
@@ -253,7 +434,7 @@ export function handleLift(event: LogNote): void {
   governanceInfo.save()
 
   let action = new Action(
-    event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+    'LIFT' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
   )
   action.type = 'LIFT'
   action.sender = sender
@@ -263,4 +444,141 @@ export function handleLift(event: LogNote): void {
   action.save()
 
   updateGovernanceInfoEntity(event.block)
+}
+
+function saveAddAction(
+  yays: Bytes[],
+  event: LogNote,
+  locked: BigDecimal,
+  id: string,
+): void {
+  let sender = event.params.guy
+
+  for (let index = 0; index < yays.length; index++) {
+    let yay = (yays as Bytes[])[index]
+    if (yay !== null) {
+      let spell = Spell.load(yay.toHexString())
+
+      // there are some yays which are no spell
+      if (spell !== null) {
+        let actionId =
+          id + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString()
+        let voteAction = new AddAction(actionId)
+        voteAction.locked = locked
+        voteAction.sender = sender
+        voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
+        voteAction.transactionHash = event.transaction.hash
+        voteAction.timestamp = event.block.timestamp
+        voteAction.save()
+
+        spell.totalVotes = spell.totalVotes.plus(BIGINT_ONE)
+        spell.approvals = spell.approvals.plus(locked)
+        spell.timeLineCount = spell.timeLineCount.plus(BIGINT_ONE)
+        spell.save()
+      }
+    }
+  }
+}
+function saveRemoveAction(
+  yays: Bytes[],
+  event: LogNote,
+  locked: BigDecimal,
+  id: string,
+): void {
+  let sender = event.params.guy
+
+  for (let index = 0; index < yays.length; index++) {
+    let yay = (yays as Bytes[])[index]
+    if (yay !== null) {
+      let spell = Spell.load(yay.toHexString())
+
+      // there are some yays which are no spell
+      if (spell !== null) {
+        let actionId =
+          id + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString()
+        let voteAction = new RemoveAction(actionId)
+        voteAction.locked = locked
+        voteAction.sender = sender
+        voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
+        voteAction.transactionHash = event.transaction.hash
+        voteAction.timestamp = event.block.timestamp
+        voteAction.save()
+
+        spell.approvals = spell.approvals.minus(locked)
+        spell.totalVotes = spell.totalVotes.minus(BIGINT_ONE)
+        spell.timeLineCount = spell.timeLineCount.plus(BIGINT_ONE)
+        spell.save()
+      }
+    }
+  }
+}
+function saveLockAction(
+  yays: Bytes[],
+  event: LogNote,
+  locked: BigDecimal,
+  id: string,
+): void {
+  let sender = event.params.guy
+
+  for (let index = 0; index < yays.length; index++) {
+    let yay = (yays as Bytes[])[index]
+    if (yay !== null) {
+      let spell = Spell.load(yay.toHexString())
+
+      // there are some yays which are no spell
+      if (spell !== null) {
+        let actionId =
+          id + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString()
+        let voteAction = new LockAction(actionId)
+        voteAction.wad = locked
+
+        voteAction.sender = sender
+        voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
+        voteAction.transactionHash = event.transaction.hash
+        voteAction.timestamp = event.block.timestamp
+        voteAction.save()
+
+        spell.approvals = spell.approvals.plus(locked)
+        spell.timeLineCount = spell.timeLineCount.plus(BIGINT_ONE)
+        spell.save()
+      }
+    }
+  }
+}
+function saveFreeAction(
+  yays: Bytes[],
+  event: LogNote,
+  locked: BigDecimal,
+  id: string,
+): void {
+  let sender = event.params.guy
+
+  for (let index = 0; index < yays.length; index++) {
+    let yay = (yays as Bytes[])[index]
+    if (yay !== null) {
+      let spell = Spell.load(yay.toHexString())
+
+      // there are some yays which are no spell
+      if (spell !== null) {
+        let actionId =
+          id + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString()
+        let voteAction = new FreeAction(actionId)
+        voteAction.wad = locked
+
+        voteAction.sender = sender
+        voteAction.spell = yay.toHexString()
+        voteAction.block = event.block.number
+        voteAction.transactionHash = event.transaction.hash
+        voteAction.timestamp = event.block.timestamp
+        voteAction.save()
+
+        spell.approvals = spell.approvals.minus(locked)
+        spell.timeLineCount = spell.timeLineCount.plus(BIGINT_ONE)
+        spell.save()
+      }
+    }
+  }
 }
