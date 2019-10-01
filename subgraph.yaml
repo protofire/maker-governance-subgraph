@@ -93,6 +93,10 @@ dataSources:
       eventHandlers:
         - event: PollCreated(indexed address,uint256,indexed uint256,uint256,uint256,string,string)
           handler: handlePollCreated
+        - event: Voted(indexed address,indexed uint256,indexed uint256)
+          handler: handlePollVote
+        - event: PollWithdrawn(indexed address,uint256,uint256)
+          handler: handlePollWithdraw
       file: ./src/mappings/PollingEmitter.ts
 templates:
   - name: DSSpell
