@@ -177,6 +177,8 @@ type Poll @entity {
   multiHash: String
   # TODO: Document
   url: String
+  " Withdrawal timestamp "
+  withdrawn: BigInt
   " Total voters supporting this poll"
   totalVotes: BigInt
   # TODO: Document

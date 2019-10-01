@@ -84,7 +84,7 @@ export function handlePollVote(event: Voted): void {
     action.save()
 
     poll.timeLineCount = poll.timeLineCount.plus(BIGINT_ONE)
-    poll.totalVotes
+    poll.save()
   } else {
     log.error('handlePollVote: No Poll id {} found.', [event.params.pollId.toString()])
   }
@@ -94,14 +94,6 @@ export function handlePollWithdraw(event: PollWithdrawn): void {
   let poll = Poll.load(event.params.pollId.toString())
 
   if (poll !== null) {
-    let id = event.params.pollId.toString() + '-' + event.params.creator.toHexString()
-    let pollVote = PollVote.load(id)
-
-    if (pollVote !== null) {
-      store.remove('PollVote', id)
-      poll.totalVotes = poll.totalVotes.minus(BIGINT_ONE)
-    }
-
     let action = new WithdrawPollAction(
       'WITHDRAW' +
         '-' +
@@ -115,8 +107,9 @@ export function handlePollWithdraw(event: PollWithdrawn): void {
     action.timestamp = event.block.timestamp
     action.save()
 
+    poll.withdrawn = event.block.timestamp
     poll.timeLineCount = poll.timeLineCount.plus(BIGINT_ONE)
-    poll.totalVotes
+    poll.save()
   } else {
     log.error('handlePollWithdraw: No Poll id {} found.', [
       event.params.pollId.toString(),
