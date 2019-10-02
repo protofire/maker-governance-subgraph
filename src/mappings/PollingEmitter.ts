@@ -16,6 +16,7 @@ import {
 
 import {
   BIGINT_ONE,
+  BIGINT_ZERO,
   getGovernanceInfoEntity,
   updateGovernanceInfoEntity,
 } from '../helpers'
@@ -30,6 +31,8 @@ export function handlePollCreated(event: PollCreated): void {
   poll.endDate = event.params.endDate
   poll.multiHash = event.params.multiHash
   poll.url = event.params.url
+  poll.votesCount = BIGINT_ZERO
+  poll.timeLineCount = BIGINT_ZERO
 
   poll.save()
 
@@ -63,7 +66,7 @@ export function handlePollVote(event: Voted): void {
       pollVote = new PollVote(id)
       pollVote.voter = event.params.voter
       pollVote.poll = event.params.pollId.toString()
-      poll.totalVotes = poll.totalVotes.plus(BIGINT_ONE)
+      poll.votesCount = poll.votesCount.plus(BIGINT_ONE)
     }
 
     pollVote.option = event.params.optionId

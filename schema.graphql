@@ -179,8 +179,8 @@ type Poll @entity {
   url: String
   " Withdrawal timestamp "
   withdrawn: BigInt
-  " Total voters supporting this poll"
-  totalVotes: BigInt
+  " Number votes"
+  votesCount: BigInt!
   # TODO: Document
   votes: [PollVote!] @derivedFrom(field: "poll")
   " Number of record in timeLine "
