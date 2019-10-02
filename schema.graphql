@@ -14,6 +14,11 @@ type VoterRegistry @entity {
   coldAddress: Bytes!
   hotAddress: Bytes!
   voteProxies: [VoteProxy!]! @derivedFrom(field: "owner")
+
+  " Block number "
+  block: BigInt!
+  transactionHash: Bytes!
+  timestamp: BigInt!
 }
 
 type VoteProxy @entity {
@@ -24,8 +29,6 @@ type VoteProxy @entity {
   owner: VoterRegistry!
   " Its currents voted slate"
   votedSlate: Slate
-  " Action timestamp as seconds (time) "
-  timestamp: BigInt!
 }
 
 type AddressVoter @entity {
