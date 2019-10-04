@@ -17,11 +17,13 @@ export function handleLinkConfirmed(event: LinkConfirmedEvent): void {
 
   voteRegistry.coldAddress = event.params.cold
   voteRegistry.hotAddress = event.params.hot
+  voteRegistry.block = event.block.number
+  voteRegistry.transactionHash = event.transaction.hash
+  voteRegistry.timestamp = event.block.timestamp
   voteRegistry.save()
 
   let voteProxy = new VoteProxy(event.params.voteProxy.toHex())
   voteProxy.owner = voteRegistry.id
-  voteProxy.timestamp = event.block.timestamp
   voteProxy.locked = BIGDECIMAL_ZERO
   voteProxy.save()
 
