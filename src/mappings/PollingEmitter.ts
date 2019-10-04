@@ -89,7 +89,7 @@ export function handlePollVote(event: Voted): void {
     poll.timeLineCount = poll.timeLineCount.plus(BIGINT_ONE)
     poll.save()
   } else {
-    log.error('handlePollVote: No Poll id {} found.', [event.params.pollId.toString()])
+    log.warning('handlePollVote: No Poll id {} found.', [event.params.pollId.toString()])
   }
 }
 
@@ -114,7 +114,7 @@ export function handlePollWithdraw(event: PollWithdrawn): void {
     poll.timeLineCount = poll.timeLineCount.plus(BIGINT_ONE)
     poll.save()
   } else {
-    log.error('handlePollWithdraw: No Poll id {} found.', [
+    log.warning('handlePollWithdraw: No Poll id {} found.', [
       event.params.pollId.toString(),
     ])
   }

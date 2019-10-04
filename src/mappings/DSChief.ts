@@ -122,7 +122,7 @@ export function handleFree(event: LogNote): void {
 
     votedSlate = addressVoter.votedSlate
   } else {
-    log.error('handleFree: No VoteProxy nor addressVoter id {} found.', [sender])
+    log.warning('handleFree: No VoteProxy nor addressVoter id {} found.', [sender])
     return
   }
 
@@ -153,12 +153,6 @@ export function handleVote(event: LogNote): void {
   let sender = event.params.guy
   let slateID = event.params.foo
 
-  log.error('handleVote: SENDER {} SLATE {} TANSACTION {}', [
-    sender.toHexString(),
-    slateID.toHexString(),
-    event.transaction.hash.toHexString(),
-  ])
-
   let dsChief = DSChief.bind(event.address)
   let locked = dsChief.deposits(sender)
 
@@ -169,7 +163,7 @@ export function handleVote(event: LogNote): void {
   let addressVoter = AddressVoter.load(sender.toHex())
 
   if (slate == null) {
-    log.error('handleVote: Slate with id {} not found.', [slateID.toHex()])
+    log.warning('handleVote: Slate with id {} not found.', [slateID.toHex()])
     return
   }
 
@@ -191,7 +185,9 @@ export function handleVote(event: LogNote): void {
     addressVoter.votedSlate = slate.id
     addressVoter.save()
   } else {
-    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [sender.toHex()])
+    log.warning('handleVote: No VoteProxy nor addressVoter id {} found.', [
+      sender.toHex(),
+    ])
     return
   }
 
@@ -252,12 +248,6 @@ export function handleVoteArray(event: LogNote): void {
   let slateID = dsChief.votes(sender)
   let locked = dsChief.deposits(sender)
 
-  log.error('handleVoteArray: SENDER {} SLATE {} TANSACTION {}', [
-    sender.toHexString(),
-    slateID.toHexString(),
-    event.transaction.hash.toHexString(),
-  ])
-
   handleSlate(slateID, event.address, event.block)
 
   let slate = Slate.load(slateID.toHex())
@@ -265,7 +255,7 @@ export function handleVoteArray(event: LogNote): void {
   let addressVoter = AddressVoter.load(sender.toHex())
 
   if (slate == null) {
-    log.error('handleVote: Slate with id {} not found.', [slateID.toHex()])
+    log.warning('handleVote: Slate with id {} not found.', [slateID.toHex()])
     return
   }
 
@@ -287,7 +277,9 @@ export function handleVoteArray(event: LogNote): void {
     addressVoter.votedSlate = slate.id
     addressVoter.save()
   } else {
-    log.error('handleVote: No VoteProxy nor addressVoter id {} found.', [sender.toHex()])
+    log.warning('handleVote: No VoteProxy nor addressVoter id {} found.', [
+      sender.toHex(),
+    ])
     return
   }
 
@@ -321,7 +313,6 @@ export function handleVoteArray(event: LogNote): void {
       if (yay !== null) {
         if (newYays.indexOf(yay) == -1) {
           let test = Bytes.fromHexString(yay as string) as Bytes
-          log.error('handleVoteArray REMOVE yay {} trans {}', [yay, test.toHexString()])
           removedYays.push(Bytes.fromHexString(yay as string) as Bytes)
         }
       }
