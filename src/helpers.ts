@@ -8,7 +8,7 @@ import {
 } from '@graphprotocol/graph-ts'
 import { GovernanceInfo } from '../generated/schema'
 
-export let PRECISION = BigDecimal.fromString('1000000000000000000') // 10^18
+let PRECISION = BigDecimal.fromString('1000000000000000000') // 10^18
 let SAI_MOM = '0xf2c5369cffb8ea6284452b0326e326dbfdcb867c'
 
 export let BIGINT_ONE = BigInt.fromI32(1)

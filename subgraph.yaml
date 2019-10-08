@@ -2,6 +2,34 @@ specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
+  - name: GovernanceToken
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: DSToken
+      address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2'
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mappings/DSToken.ts
+      entities:
+        - Account
+        - AccountBalance
+        - AccountBalanceSnapshot
+        - BurnEvent
+        - MintEvent
+        - TransferEvent
+      abis:
+        - name: DSToken
+          file: ./abis/DSToken.json
+      eventHandlers:
+        - event: Burn(indexed address,uint256)
+          handler: handleBurn
+        - event: Mint(indexed address,uint256)
+          handler: handleMint
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
   - kind: ethereum/contract
     name: VoteProxyFactory
     network: mainnet
