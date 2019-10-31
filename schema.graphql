@@ -11,22 +11,32 @@ enum ActionType {
 
 type VoterRegistry @entity {
   id: ID!
+
   coldAddress: Bytes!
+
   hotAddress: Bytes!
+
   voteProxies: [VoteProxy!]! @derivedFrom(field: "owner")
 
   " Block number "
   block: BigInt!
+
+  " Transaction hash (tx) "
   transactionHash: Bytes!
+
+  " Timestamp as seconds (time) "
   timestamp: BigInt!
 }
 
 type VoteProxy @entity {
   " VoteProxy address"
   id: ID!
+
   " Amount of loked MKR"
   locked: BigDecimal!
+
   owner: VoterRegistry!
+
   " Its currents voted slate"
   votedSlate: Slate
 }
@@ -34,10 +44,13 @@ type VoteProxy @entity {
 type AddressVoter @entity {
   " Address"
   id: ID!
+
   " Amount of loked MKR"
   locked: BigDecimal!
+
   " Its currents voted slate"
   votedSlate: Slate
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -45,12 +58,16 @@ type AddressVoter @entity {
 type Slate @entity {
   # TODO: Document
   id: ID!
+
   # TODO: Document
   yays: [Bytes!]
-  " Timestamp when the slate was created"
+
+  " Timestamp when the slate was created as seconds"
   timestamp: BigInt!
+
   # TODO: Document
   votedByProxies: [VoteProxy!] @derivedFrom(field: "votedSlate")
+
   # TODO: Document
   votedByAddresses: [AddressVoter!] @derivedFrom(field: "votedSlate")
 }
@@ -58,22 +75,34 @@ type Slate @entity {
 type Spell @entity {
   " ID represent the contract address "
   id: ID!
-  " Timestamp when the spell voted by the first time"
+
+  " Timestamp when the spell was voted by the first time"
   timestamp: BigInt!
+
+  " Spell's data "
+  data: Bytes!
+
   " Timestamp when the spell is casted"
   casted: BigInt
+
   " How much MKR it has when the spell is casted"
   castedWith: BigDecimal
+
   " Timestamp when the spell is casted"
   lifted: BigInt
+
   " How much MKR it has when the spell is lifted to hat"
   liftedWith: BigDecimal
+
   " Total MKR supporting this spell"
   approvals: BigDecimal!
+
   " Total voters supporting this spell"
   totalVotes: BigInt
+
   # TODO: Document
   timeLineCount: BigInt!
+
   # TODO: Document
   timeLine: [VotingAction!] @derivedFrom(field: "spell")
 }
@@ -84,30 +113,42 @@ type Spell @entity {
 interface VotingAction {
   " Equals to: <actionType>-<transactionHash>-<logIndex> "
   id: ID!
+
   " Voter's Address "
   sender: Bytes!
+
   " Spell related to this action"
   spell: Spell
 
   " Block number "
   block: BigInt!
+
+  " Transaction hash (tx) "
   transactionHash: Bytes!
+
+  " Timestamp as seconds (time) "
   timestamp: BigInt!
 }
 
 type AddAction implements VotingAction @entity {
   " Equals to: <ADD | ADD-ARRAY>-<transactionHash>-<logIndex> "
   id: ID!
+
   " Voter's Address "
   sender: Bytes!
+
   " Spell related to this action"
   spell: Spell
+
   " Amount of loked MKR the sender had at the moment this action is performed"
   locked: BigDecimal!
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -115,16 +156,22 @@ type AddAction implements VotingAction @entity {
 type RemoveAction implements VotingAction @entity {
   " Equals to: <REMOVE | REMOVE-ARRAY>-<transactionHash>-<logIndex> "
   id: ID!
+
   " Voter's Address "
   sender: Bytes!
+
   " Spell related to this action"
   spell: Spell
+
   " Amount of loked MKR the sender had at the moment this action is performed"
   locked: BigDecimal!
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -132,16 +179,22 @@ type RemoveAction implements VotingAction @entity {
 type LockAction implements VotingAction @entity {
   " Equals to: <LOCK>-<transactionHash>-<logIndex> "
   id: ID!
+
   " Voter's Address "
   sender: Bytes!
+
   " Spell related to this action"
   spell: Spell
+
   " Amount of MKR locked or withdrawn"
   wad: BigDecimal!
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -149,16 +202,22 @@ type LockAction implements VotingAction @entity {
 type FreeAction implements VotingAction @entity {
   " Equals to: <FREE>-<transactionHash>-<logIndex> "
   id: ID!
+
   " Voter's Address "
   sender: Bytes!
+
   " Spell related to this action"
   spell: Spell
+
   " Amount of MKR locked or withdrawn"
   wad: BigDecimal!
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -166,28 +225,40 @@ type FreeAction implements VotingAction @entity {
 type Poll @entity {
   " Equals to: <Poll ID> "
   id: ID!
+
   # TODO: Document
   creator: Bytes
+
   # TODO: Document
   blockCreated: BigInt!
+
   # TODO: Document
   pollId: BigInt!
+
   # TODO: Document
   startDate: BigInt!
+
   # TODO: Document
   endDate: BigInt!
+
   # TODO: Document
   multiHash: String
+
   # TODO: Document
   url: String
+
   " Withdrawal timestamp "
   withdrawn: BigInt
+
   " Number votes"
   votesCount: BigInt!
+
   # TODO: Document
   votes: [PollVote!] @derivedFrom(field: "poll")
+
   " Number of record in timeLine "
   timeLineCount: BigInt!
+
   " Poll historical data "
   timeLine: [PollAction!] @derivedFrom(field: "poll")
 }
@@ -195,16 +266,22 @@ type Poll @entity {
 type PollVote @entity {
   " Equals to: <Poll ID>-<Voter's Address> "
   id: ID!
+
   " Voters's Address "
   voter: Bytes!
+
   " Poll related to this action"
   poll: Poll
+
   " Selected option "
   option: BigInt!
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Vote timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -215,24 +292,33 @@ type PollVote @entity {
 interface PollAction {
   " Equals to: <actionType>-<transactionHash>-<voter> "
   id: ID!
-  " Spell related to this action"
+
+  " Poll related to this action"
   poll: Poll
 
   " Block number "
   block: BigInt!
+
+  " Transaction hash (tx) "
   transactionHash: Bytes!
+
+  " Timestamp as seconds (time) "
   timestamp: BigInt!
 }
 
 type CreatePollAction implements PollAction @entity {
   " Equals to: <CREATE>-<transactionHash>-<creator> "
   id: ID!
+
   " Spell related to this action"
   poll: Poll
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -240,16 +326,22 @@ type CreatePollAction implements PollAction @entity {
 type VotePollAction implements PollAction @entity {
   " Equals to: <VOTE>-<transactionHash>-<voter> "
   id: ID!
+
   " Voter's Address "
   sender: Bytes!
+
   " Spell related to this action"
   poll: Poll
+
   " Selected option "
   option: BigInt!
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -257,14 +349,19 @@ type VotePollAction implements PollAction @entity {
 type WithdrawPollAction implements PollAction @entity {
   " Equals to: <WITHDRAW>-<transactionHash>-<voter> "
   id: ID!
+
   " Voter's Address "
   sender: Bytes!
+
   " Spell related to this action"
   poll: Poll
+
   " Block number "
   block: BigInt!
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
@@ -272,55 +369,79 @@ type WithdrawPollAction implements PollAction @entity {
 type Action @entity {
   # TODO: Document
   id: ID!
+
   # TODO: Document
   sender: Bytes!
+
   " Action name (act) "
   type: ActionType!
+
   " Action value (arg) "
   wad: BigDecimal
+
   " New Hat"
   hat: Bytes
+
   " Spell casted"
   spell: Bytes
+
   " Votes"
   yays: [Bytes!]
+
   " Slate voted"
   slate: Bytes
+
   " New voter address"
   voterAddress: Bytes
+
   " Is the new voter a VoteProxy"
   isVoteProxy: Boolean
+
   " Transaction hash (tx) "
   transactionHash: Bytes!
+
   " Action timestamp as seconds (time) "
   timestamp: BigInt!
 }
 
 type GovernanceInfo @entity {
   # TODO: Document
+
   id: ID!
+
   # TODO: Document
   countProxies: BigInt!
+
   # TODO: Document
   countAddresses: BigInt!
+
   # TODO: Document
   countSlates: BigInt!
+
   # TODO: Document
   countSpells: BigInt!
+
   # TODO: Document
   countLock: BigInt!
+
   # TODO: Document
   countFree: BigInt!
+
   # TODO: Document
   countPolls: BigInt!
+
   # TODO: Document
   countCasted: BigInt!
+
   # TODO: Document
   locked: BigDecimal!
+
   # TODO: Document
   lastBlock: BigInt!
+
   # TODO: Document
   lastSynced: BigInt!
+
   # TODO: Document
   hat: Bytes!
 }
