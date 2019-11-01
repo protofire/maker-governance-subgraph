@@ -18,10 +18,8 @@ export function handleCast(event: LogNote): void {
   )
   let approval = dsChief.approvals(event.address)
 
-  log.warning('handleCast: Spell {} has been casted.', [event.address.toHexString()])
-  // let response = contract.try_done()
+  log.info('Spell {} has been casted.', [event.address.toHexString()])
 
-  // if (!response.reverted && response.value) {
   let spellEntity = Spell.load(event.address.toHexString())
   spellEntity.casted = event.block.timestamp
   spellEntity.castedWith = fromBigIntToBigDecimal(approval)
@@ -36,9 +34,6 @@ export function handleCast(event: LogNote): void {
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
-  // } else {
-
-  // }
 
   let governanceInfo = getGovernanceInfoEntity()
   governanceInfo.countCasted = governanceInfo.countCasted.plus(BIGINT_ONE)
