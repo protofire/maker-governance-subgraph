@@ -390,6 +390,10 @@ function handleSlate(
       if (!dsResponse.reverted && isSaiMom(dsResponse.value)) {
         // Start traking this DS-Spell
         DSSpellTemplate.create(spellAddress)
+
+        let spellData = dsSpell.data()
+        spell.data = spellData
+
         // Update spells count
         governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
