@@ -2,4 +2,4 @@
 
 # Maker Governance Subgraph
 
-[Explorer](https://thegraph.com/explorer/subgraph/protofire/makerdao-governance)
+[Maker Governance Explorer](https://thegraph.com/explorer/subgraph/protofire/makerdao-governance)
