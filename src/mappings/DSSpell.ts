@@ -31,6 +31,7 @@ export function handleCast(event: LogNote): void {
   action.type = 'CAST'
   action.sender = event.params.guy
   action.spell = event.address
+  action.block = event.block.number
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()

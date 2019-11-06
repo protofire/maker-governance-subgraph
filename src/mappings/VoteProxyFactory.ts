@@ -41,6 +41,8 @@ export function handleLinkConfirmed(event: LinkConfirmedEvent): void {
   action.sender = event.transaction.from
   action.voterAddress = event.params.voteProxy
   action.isVoteProxy = true
+  action.block = event.block.number
+  action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
 
