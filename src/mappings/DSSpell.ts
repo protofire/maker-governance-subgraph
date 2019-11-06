@@ -37,6 +37,8 @@ export function handleCast(event: LogNote): void {
 
   let governanceInfo = getGovernanceInfoEntity()
   governanceInfo.countCasted = governanceInfo.countCasted.plus(BIGINT_ONE)
+  governanceInfo.active = event.address
+  governanceInfo.save()
 
   updateGovernanceInfoEntity(event.block)
 }

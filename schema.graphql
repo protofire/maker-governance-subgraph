@@ -409,39 +409,42 @@ type GovernanceInfo @entity {
 
   id: ID!
 
-  # TODO: Document
+  # Number of VoteProxy contracts created
   countProxies: BigInt!
 
-  # TODO: Document
+  # Number of unique address that ever locked some MKR in the Chief
   countAddresses: BigInt!
 
-  # TODO: Document
+  # Number of Slates
   countSlates: BigInt!
 
-  # TODO: Document
+  # Number of Spells
   countSpells: BigInt!
 
-  # TODO: Document
+  # Number of lock actions
   countLock: BigInt!
 
-  # TODO: Document
+  # Number of free actions
   countFree: BigInt!
 
-  # TODO: Document
+  # Number of Polls
   countPolls: BigInt!
 
-  # TODO: Document
+  # Number of casted spells
   countCasted: BigInt!
 
-  # TODO: Document
+  # MKR currently locked in Chief
   locked: BigDecimal!
 
-  # TODO: Document
+  # Last block number processed
   lastBlock: BigInt!
 
-  # TODO: Document
+  # Timestamp as seconds of last block processed
   lastSynced: BigInt!
 
-  # TODO: Document
+  # Current hat
   hat: Bytes!
+
+  # Last casted spell
+  active: Bytes
 }
