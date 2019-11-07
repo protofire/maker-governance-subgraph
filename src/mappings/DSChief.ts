@@ -74,6 +74,8 @@ export function handleLock(event: LogNote): void {
     )
     action.type = 'VOTER'
     action.voterAddress = event.params.guy
+    action.block = event.block.number
+    action.transactionHash = event.transaction.hash
     action.timestamp = event.block.timestamp
     action.save()
 
@@ -88,6 +90,7 @@ export function handleLock(event: LogNote): void {
   action.type = 'LOCK'
   action.sender = event.params.guy
   action.wad = locked
+  action.block = event.block.number
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
@@ -135,6 +138,7 @@ export function handleFree(event: LogNote): void {
   action.type = 'FREE'
   action.sender = event.params.guy
   action.wad = free
+  action.block = event.block.number
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
@@ -235,6 +239,7 @@ export function handleVote(event: LogNote): void {
   action.type = 'VOTE'
   action.sender = sender
   action.yays = slate.yays
+  action.block = event.block.number
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
@@ -327,6 +332,7 @@ export function handleVoteArray(event: LogNote): void {
   action.type = 'VOTE'
   action.sender = sender
   action.yays = slate.yays
+  action.block = event.block.number
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
@@ -344,6 +350,7 @@ export function handleEtch(event: Etch): void {
   )
   action.type = 'ETCH'
   action.sender = event.transaction.from
+  action.block = event.block.number
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()
@@ -434,6 +441,7 @@ export function handleLift(event: LogNote): void {
   action.type = 'LIFT'
   action.sender = sender
   action.hat = whom
+  action.block = event.block.number
   action.transactionHash = event.transaction.hash
   action.timestamp = event.block.timestamp
   action.save()

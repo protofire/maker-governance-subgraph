@@ -371,7 +371,7 @@ type Action @entity {
   id: ID!
 
   # TODO: Document
-  sender: Bytes!
+  sender: Bytes
 
   " Action name (act) "
   type: ActionType!
@@ -396,6 +396,9 @@ type Action @entity {
 
   " Is the new voter a VoteProxy"
   isVoteProxy: Boolean
+
+  " Block number "
+  block: BigInt!
 
   " Transaction hash (tx) "
   transactionHash: Bytes!
@@ -443,7 +446,7 @@ type GovernanceInfo @entity {
   lastSynced: BigInt!
 
   # Current hat
-  hat: Bytes!
+  hat: Bytes
 
   # Last casted spell
   active: Bytes
