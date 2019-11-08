@@ -80,7 +80,7 @@ type Spell @entity {
   timestamp: BigInt!
 
   " Spell's data "
-  data: Bytes!
+  data: Bytes
 
   " Timestamp when the spell is casted"
   casted: BigInt
@@ -371,7 +371,7 @@ type Action @entity {
   id: ID!
 
   # TODO: Document
-  sender: Bytes!
+  sender: Bytes
 
   " Action name (act) "
   type: ActionType!
@@ -396,6 +396,9 @@ type Action @entity {
 
   " Is the new voter a VoteProxy"
   isVoteProxy: Boolean
+
+  " Block number "
+  block: BigInt!
 
   " Transaction hash (tx) "
   transactionHash: Bytes!
@@ -443,5 +446,5 @@ type GovernanceInfo @entity {
   lastSynced: BigInt!
 
   # TODO: Document
-  hat: Bytes!
+  hat: Bytes
 }

@@ -1,8 +1,11 @@
 import { Address, log } from '@graphprotocol/graph-ts'
 
-import { DSSpell, LogNote } from '../../generated/templates/DSSpell/DSSpell'
+import {
+  RaiseCeilingLowerSF,
+  LogNote,
+} from '../../generated/templates/RaiseCeilingLowerSF/RaiseCeilingLowerSF'
 import { Spell, Action } from '../../generated/schema'
-import { DSChief } from '../../generated/templates/DSSpell/DSChief'
+import { DSChief } from '../../generated/templates/RaiseCeilingLowerSF/DSChief'
 import {
   BIGINT_ONE,
   getGovernanceInfoEntity,
@@ -11,14 +14,14 @@ import {
 } from '../helpers'
 
 export function handleCast(event: LogNote): void {
-  let contract = DSSpell.bind(event.address)
+  let contract = RaiseCeilingLowerSF.bind(event.address)
 
   let dsChief = DSChief.bind(
     Address.fromString('0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5'),
   )
   let approval = dsChief.approvals(event.address)
 
-  log.info('Spell {} has been casted.', [event.address.toHexString()])
+  log.info('RaiseCeilingLowerSF {} has been casted.', [event.address.toHexString()])
 
   let spellEntity = Spell.load(event.address.toHexString())
   spellEntity.casted = event.block.timestamp
@@ -38,6 +41,7 @@ export function handleCast(event: LogNote): void {
 
   let governanceInfo = getGovernanceInfoEntity()
   governanceInfo.countCasted = governanceInfo.countCasted.plus(BIGINT_ONE)
+  governanceInfo.save()
 
   updateGovernanceInfoEntity(event.block)
 }
