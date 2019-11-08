@@ -50,6 +50,8 @@ dataSources:
           file: ./abis/DSChief.json
         - name: DSSpell
           file: ./abis/DSSpell.json
+        - name: RaiseCeilingLowerSF
+          file: ./abis/RaiseCeilingLowerSF.json
       eventHandlers:
         - event: LogNote(indexed bytes4,indexed address,indexed bytes32,indexed bytes32,uint256,bytes)
           topic0: '0xdd46706400000000000000000000000000000000000000000000000000000000' # lock(uint)
@@ -126,3 +128,30 @@ templates:
           topic0: '0x96d373e500000000000000000000000000000000000000000000000000000000' # cast()
           handler: handleCast
       file: ./src/mappings/DSSpell.ts
+  - name: RaiseCeilingLowerSF
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: RaiseCeilingLowerSF
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - VoterRegistry
+        - Slate
+        - Spell
+        - Poll
+        - VoteProxy
+        - Action
+        - GovernanceInfo
+      abis:
+        - name: RaiseCeilingLowerSF
+          file: ./abis/RaiseCeilingLowerSF.json
+        - name: DSChief
+          file: ./abis/DSChief.json
+      eventHandlers:
+        - event: LogNote(indexed bytes4,indexed address,indexed bytes32,indexed bytes32,uint256,bytes)
+          topic0: '0x96d373e500000000000000000000000000000000000000000000000000000000' # cast()
+          handler: handleCast
+      file: ./src/mappings/RaiseCeilingLowerSF.ts
