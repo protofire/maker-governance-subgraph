@@ -80,7 +80,7 @@ type Spell @entity {
   timestamp: BigInt!
 
   " Spell's data "
-  data: Bytes!
+  data: Bytes
 
   " Timestamp when the spell is casted"
   casted: BigInt
