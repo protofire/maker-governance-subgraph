@@ -413,10 +413,6 @@ function handleSlate(
         let raiseCeilingLowerSF = RaiseCeilingLowerSF.bind(spellAddress)
         let rclsfResponse = raiseCeilingLowerSF.try_MOM()
 
-        log.warning('RaiseCeilingLowerSF try_MOM: {}.', [
-          !rclsfResponse.reverted ? rclsfResponse.value.toHexString() : 'REVERTED',
-        ])
-
         if (!rclsfResponse.reverted && isSaiMom(rclsfResponse.value)) {
           // Start traking this RaiseCeilingLowerSF
           RaiseCeilingLowerSFTemplate.create(spellAddress)
