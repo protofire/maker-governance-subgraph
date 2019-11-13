@@ -11,7 +11,11 @@ import {
 
 import { LogNote, DSChief, Etch } from '../../generated/DSChief/DSChief'
 import { DSSpell } from '../../generated/DSChief/DSSpell'
-import { DSSpell as DSSpellTemplate } from '../../generated/templates'
+import { RaiseCeilingLowerSF } from '../../generated/DSChief/RaiseCeilingLowerSF'
+import {
+  DSSpell as DSSpellTemplate,
+  RaiseCeilingLowerSF as RaiseCeilingLowerSFTemplate,
+} from '../../generated/templates'
 import {
   AddressVoter,
   VoteProxy,
@@ -405,6 +409,19 @@ function handleSlate(
         governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
         spell.save()
+      } else if (dsResponse.reverted) {
+        let raiseCeilingLowerSF = RaiseCeilingLowerSF.bind(spellAddress)
+        let rclsfResponse = raiseCeilingLowerSF.try_MOM()
+
+        if (!rclsfResponse.reverted && isSaiMom(rclsfResponse.value)) {
+          // Start traking this RaiseCeilingLowerSF
+          RaiseCeilingLowerSFTemplate.create(spellAddress)
+
+          // Update spells count
+          governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
+
+          spell.save()
+        }
       }
     }
     // Save slate's yay (even if it isn't a spell)
@@ -421,32 +438,37 @@ function handleSlate(
 export function handleLift(event: LogNote): void {
   let sender = event.params.guy
   let whom = toAddress(event.params.foo)
-  let dsChief = DSChief.bind(event.address)
-
   let spellEntity = Spell.load(whom.toHexString())
-  let approval = dsChief.approvals(whom)
 
-  // How much MKR it has when the spell is lifted to hat
-  spellEntity.lifted = event.block.timestamp
-  spellEntity.liftedWith = fromBigIntToBigDecimal(approval)
-  spellEntity.save()
+  if (spellEntity !== null) {
+    let dsChief = DSChief.bind(event.address)
 
-  let governanceInfo = getGovernanceInfoEntity()
-  governanceInfo.hat = whom
-  governanceInfo.save()
+    let approval = dsChief.approvals(whom)
 
-  let action = new Action(
-    'LIFT' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
-  )
-  action.type = 'LIFT'
-  action.sender = sender
-  action.hat = whom
-  action.block = event.block.number
-  action.transactionHash = event.transaction.hash
-  action.timestamp = event.block.timestamp
-  action.save()
+    // How much MKR it has when the spell is lifted to hat
+    spellEntity.lifted = event.block.timestamp
+    spellEntity.liftedWith = fromBigIntToBigDecimal(approval)
+    spellEntity.save()
 
-  updateGovernanceInfoEntity(event.block)
+    let governanceInfo = getGovernanceInfoEntity()
+    governanceInfo.hat = whom
+    governanceInfo.save()
+
+    let action = new Action(
+      'LIFT' + '-' + event.transaction.hash.toHex() + '-' + event.logIndex.toString(),
+    )
+    action.type = 'LIFT'
+    action.sender = sender
+    action.hat = whom
+    action.block = event.block.number
+    action.transactionHash = event.transaction.hash
+    action.timestamp = event.block.timestamp
+    action.save()
+
+    updateGovernanceInfoEntity(event.block)
+  } else {
+    log.warning('handleLift: Spell with id {} not found.', [whom.toHexString()])
+  }
 }
 
 function saveAddAction(
