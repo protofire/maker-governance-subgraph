@@ -54,6 +54,8 @@ dataSources:
           file: ./abis/DSSpell.json
         - name: RaiseCeilingLowerSF
           file: ./abis/RaiseCeilingLowerSF.json
+        - name: DssLaunchSpell
+          file: ./abis/DssLaunchSpell.json
       eventHandlers:
         - event: LogNote(indexed bytes4,indexed address,indexed bytes32,indexed bytes32,uint256,bytes)
           topic0: '0xdd46706400000000000000000000000000000000000000000000000000000000' # lock(uint)
@@ -154,3 +156,25 @@ templates:
           topic0: '0x96d373e500000000000000000000000000000000000000000000000000000000' # cast()
           handler: handleCast
       file: ./src/mappings/RaiseCeilingLowerSF.ts
+  - name: DssLaunchSpell
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: DssLaunchSpell
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Spell
+        - Action
+        - GovernanceInfo
+      abis:
+        - name: DssLaunchSpell
+          file: ./abis/DssLaunchSpell.json
+        - name: DSChief
+          file: ./abis/DSChief.json
+      callHandlers:
+        - function: createGravatar(string,string)
+          handler: handleCast
+      file: ./src/mappings/DssLaunchSpell.ts
