@@ -175,6 +175,6 @@ templates:
         - name: DSChief
           file: ./abis/DSChief.json
       callHandlers:
-        - function: createGravatar(string,string)
+        - function: cast()
           handler: handleCast
       file: ./src/mappings/DssLaunchSpell.ts
