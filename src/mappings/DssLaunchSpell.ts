@@ -27,7 +27,7 @@ export function handleCast(call: CastCall): void {
   spellEntity.save()
 
   let action = new Action(
-    'CAST' + '-' + call.transaction.hash.toHex() + '-' + call.to.toString(),
+    'CAST' + '-' + call.transaction.hash.toHex() + '-' + call.to.toHexString(),
   )
   action.type = 'CAST'
   action.sender = call.from
