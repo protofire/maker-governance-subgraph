@@ -8,6 +8,7 @@ dataSources:
     source:
       address: '0x868ba9aeacA5B73c7C27F3B01588bf4F1339F2bC'
       abi: VoteProxyFactory
+      startBlock: 7707803
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3
@@ -33,6 +34,7 @@ dataSources:
     source:
       address: '0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5'
       abi: DSChief
+      startBlock: 7705360
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3
@@ -52,6 +54,8 @@ dataSources:
           file: ./abis/DSSpell.json
         - name: RaiseCeilingLowerSF
           file: ./abis/RaiseCeilingLowerSF.json
+        - name: DssLaunchSpell
+          file: ./abis/DssLaunchSpell.json
       eventHandlers:
         - event: LogNote(indexed bytes4,indexed address,indexed bytes32,indexed bytes32,uint256,bytes)
           topic0: '0xdd46706400000000000000000000000000000000000000000000000000000000' # lock(uint)
@@ -77,6 +81,7 @@ dataSources:
     source:
       address: '0xF9be8F0945acDdeeDaA64DFCA5Fe9629D0CF8E5D'
       abi: PollingEmitter
+      startBlock: 8122205
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3
@@ -138,11 +143,7 @@ templates:
       apiVersion: 0.0.3
       language: wasm/assemblyscript
       entities:
-        - VoterRegistry
-        - Slate
         - Spell
-        - Poll
-        - VoteProxy
         - Action
         - GovernanceInfo
       abis:
@@ -155,3 +156,25 @@ templates:
           topic0: '0x96d373e500000000000000000000000000000000000000000000000000000000' # cast()
           handler: handleCast
       file: ./src/mappings/RaiseCeilingLowerSF.ts
+  - name: DssLaunchSpell
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: DssLaunchSpell
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Spell
+        - Action
+        - GovernanceInfo
+      abis:
+        - name: DssLaunchSpell
+          file: ./abis/DssLaunchSpell.json
+        - name: DSChief
+          file: ./abis/DSChief.json
+      callHandlers:
+        - function: cast()
+          handler: handleCast
+      file: ./src/mappings/DssLaunchSpell.ts

@@ -12,9 +12,11 @@ import {
 import { LogNote, DSChief, Etch } from '../../generated/DSChief/DSChief'
 import { DSSpell } from '../../generated/DSChief/DSSpell'
 import { RaiseCeilingLowerSF } from '../../generated/DSChief/RaiseCeilingLowerSF'
+import { DssLaunchSpell } from '../../generated/DSChief/DssLaunchSpell'
 import {
   DSSpell as DSSpellTemplate,
   RaiseCeilingLowerSF as RaiseCeilingLowerSFTemplate,
+  DssLaunchSpell as DssLaunchSpellTemplate,
 } from '../../generated/templates'
 import {
   AddressVoter,
@@ -396,36 +398,47 @@ function handleSlate(
       spell.totalVotes = BIGINT_ZERO
       spell.timeLineCount = BIGINT_ZERO
 
-      let dsSpell = DSSpell.bind(spellAddress)
-      let dsResponse = dsSpell.try_whom()
-
-      if (!dsResponse.reverted && isSaiMom(dsResponse.value)) {
-        // Start traking this DS-Spell
-        DSSpellTemplate.create(spellAddress)
-
-        let spellData = dsSpell.data()
-        spell.data = spellData
+      log.warning('handleSlate: Spell', [spellAddress.toHexString()])
+      if (spellAddress.toHex() == '0xf44113760c4f70afeeb412c63bc713b13e6e202e') {
+        // Start traking this DssLaunchSpell
+        DssLaunchSpellTemplate.create(spellAddress)
 
         // Update spells count
         governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
         spell.save()
-      } else if (dsResponse.reverted) {
-        let raiseCeilingLowerSF = RaiseCeilingLowerSF.bind(spellAddress)
-        let rclsfResponse = raiseCeilingLowerSF.try_MOM()
+      } else {
+        let dsSpell = DSSpell.bind(spellAddress)
+        let dsResponse = dsSpell.try_whom()
 
-        log.warning('RaiseCeilingLowerSF try_MOM: {}.', [
-          !rclsfResponse.reverted ? rclsfResponse.value.toHexString() : 'REVERTED',
-        ])
+        if (!dsResponse.reverted && isSaiMom(dsResponse.value)) {
+          // Start traking this DS-Spell
+          DSSpellTemplate.create(spellAddress)
 
-        if (!rclsfResponse.reverted && isSaiMom(rclsfResponse.value)) {
-          // Start traking this RaiseCeilingLowerSF
-          RaiseCeilingLowerSFTemplate.create(spellAddress)
+          let spellData = dsSpell.data()
+          spell.data = spellData
 
           // Update spells count
           governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
           spell.save()
+        } else if (dsResponse.reverted) {
+          let raiseCeilingLowerSF = RaiseCeilingLowerSF.bind(spellAddress)
+          let rclsfResponse = raiseCeilingLowerSF.try_MOM()
+
+          log.warning('RaiseCeilingLowerSF try_MOM: {}.', [
+            !rclsfResponse.reverted ? rclsfResponse.value.toHexString() : 'REVERTED',
+          ])
+
+          if (!rclsfResponse.reverted && isSaiMom(rclsfResponse.value)) {
+            // Start traking this RaiseCeilingLowerSF
+            RaiseCeilingLowerSFTemplate.create(spellAddress)
+
+            // Update spells count
+            governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
+
+            spell.save()
+          }
         }
       }
     }
