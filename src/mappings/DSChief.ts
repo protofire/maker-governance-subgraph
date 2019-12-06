@@ -4,20 +4,18 @@ import {
   Bytes,
   Address,
   BigDecimal,
-  crypto,
   EthereumBlock,
-  Value,
 } from '@graphprotocol/graph-ts'
 
 import { LogNote, DSChief, Etch } from '../../generated/DSChief/DSChief'
 import { DSSpell } from '../../generated/DSChief/DSSpell'
 import { RaiseCeilingLowerSF } from '../../generated/DSChief/RaiseCeilingLowerSF'
-import { DssLaunchSpell } from '../../generated/DSChief/DssLaunchSpell'
+
 import {
   DSSpell as DSSpellTemplate,
   RaiseCeilingLowerSF as RaiseCeilingLowerSFTemplate,
-  DssLaunchSpell as DssLaunchSpellTemplate,
 } from '../../generated/templates'
+
 import {
   AddressVoter,
   VoteProxy,
@@ -36,12 +34,13 @@ import {
   BIGINT_ZERO,
   BIGDECIMAL_ZERO,
   toBigDecimal,
-  fromBigDecimalToBigInt,
   fromBigIntToBigDecimal,
   isSaiMom,
   getGovernanceInfoEntity,
   updateGovernanceInfoEntity,
   toAddress,
+  isCustomSpellContract,
+  createCustomSpellDataSource,
 } from '../helpers'
 
 export function handleLock(event: LogNote): void {
@@ -383,6 +382,7 @@ function handleSlate(
 
   while (!slateResponse.reverted) {
     let spellAddress = slateResponse.value
+
     let spell = Spell.load(spellAddress.toHexString())
 
     // FIXME - Remove address blacklist check once https://github.com/graphprotocol/support/issues/30 gets fixed
@@ -397,9 +397,8 @@ function handleSlate(
       spell.totalVotes = BIGINT_ZERO
       spell.timeLineCount = BIGINT_ZERO
 
-      if (spellAddress.toHex() == '0xf44113760c4f70afeeb412c63bc713b13e6e202e') {
-        // Start traking this DssLaunchSpell
-        DssLaunchSpellTemplate.create(spellAddress)
+      if (isCustomSpellContract(spellAddress)) {
+        createCustomSpellDataSource(spellAddress)
 
         // Update spells count
         governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
@@ -521,6 +520,7 @@ function saveAddAction(
     }
   }
 }
+
 function saveRemoveAction(
   yays: Bytes[],
   event: LogNote,
@@ -555,6 +555,7 @@ function saveRemoveAction(
     }
   }
 }
+
 function saveLockAction(
   yays: Bytes[],
   event: LogNote,
@@ -589,6 +590,7 @@ function saveLockAction(
     }
   }
 }
+
 function saveFreeAction(
   yays: Bytes[],
   event: LogNote,

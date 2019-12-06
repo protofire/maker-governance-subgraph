@@ -1,8 +1,10 @@
 import { Address, log } from '@graphprotocol/graph-ts'
 
-import { DSSpell, LogNote } from '../../generated/templates/DSSpell/DSSpell'
-import { Spell, Action } from '../../generated/schema'
 import { DSChief } from '../../generated/templates/DSSpell/DSChief'
+import { LogNote } from '../../generated/templates/DSSpell/DSSpell'
+
+import { Spell, Action } from '../../generated/schema'
+
 import {
   BIGINT_ONE,
   getGovernanceInfoEntity,
@@ -10,12 +12,10 @@ import {
   fromBigIntToBigDecimal,
 } from '../helpers'
 
-export function handleCast(event: LogNote): void {
-  let contract = DSSpell.bind(event.address)
+import { DS_CHIEF } from '../constants'
 
-  let dsChief = DSChief.bind(
-    Address.fromString('0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5'),
-  )
+export function handleCast(event: LogNote): void {
+  let dsChief = DSChief.bind(Address.fromString(DS_CHIEF))
   let approval = dsChief.approvals(event.address)
 
   log.info('Spell {} has been casted.', [event.address.toHexString()])

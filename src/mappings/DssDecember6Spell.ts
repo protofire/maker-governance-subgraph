@@ -1,7 +1,7 @@
 import { Address, log } from '@graphprotocol/graph-ts'
 
 import { DSChief } from '../../generated/templates/DssLaunchSpell/DSChief'
-import { CastCall } from '../../generated/templates/DssLaunchSpell/DssLaunchSpell'
+import { CastCall } from '../../generated/templates/DssFlopReplaceSpell/DssFlopReplaceSpell'
 
 import { Spell, Action } from '../../generated/schema'
 
@@ -18,16 +18,16 @@ export function handleCast(call: CastCall): void {
   let dsChief = DSChief.bind(Address.fromString(DS_CHIEF))
   let approval = dsChief.approvals(call.to)
 
-  log.info('DssLaunchSpell {} has been casted.', [call.to.toHexString()])
+  log.info('DssDecember6Spell {} has been casted.', [call.to.toHexString()])
 
-  let spell = Spell.load(call.to.toHexString())
-  spell.casted = call.block.timestamp
-  spell.castedWith = fromBigIntToBigDecimal(approval)
-  spell.save()
+  let spellEntity = Spell.load(call.to.toHexString())
+  spellEntity.casted = call.block.timestamp
+  spellEntity.castedWith = fromBigIntToBigDecimal(approval)
+  spellEntity.save()
 
-  let actionId = 'CAST-' + call.transaction.hash.toHex() + '-' + call.to.toHexString()
-
-  let action = new Action(actionId)
+  let action = new Action(
+    'CAST' + '-' + call.transaction.hash.toHex() + '-' + call.to.toHexString(),
+  )
   action.type = 'CAST'
   action.sender = call.from
   action.spell = call.to

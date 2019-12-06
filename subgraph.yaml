@@ -178,3 +178,47 @@ templates:
         - function: cast()
           handler: handleCast
       file: ./src/mappings/DssLaunchSpell.ts
+  - name: DssFlopReplaceSpell
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: DssFlopReplaceSpell
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Spell
+        - Action
+        - GovernanceInfo
+      abis:
+        - name: DssFlopReplaceSpell
+          file: ./abis/DssFlopReplaceSpell.json
+        - name: DSChief
+          file: ./abis/DSChief.json
+      callHandlers:
+        - function: cast()
+          handler: handleCast
+      file: ./src/mappings/DssFlopReplaceSpell.ts
+  - name: DssDecember6Spell
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: DssDecember6Spell
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      entities:
+        - Spell
+        - Action
+        - GovernanceInfo
+      abis:
+        - name: DssDecember6Spell
+          file: ./abis/DssDecember6Spell.json
+        - name: DSChief
+          file: ./abis/DSChief.json
+      callHandlers:
+        - function: cast()
+          handler: handleCast
+      file: ./src/mappings/DssDecember6Spell.ts
