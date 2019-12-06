@@ -4,9 +4,21 @@ import {
   BigInt,
   Bytes,
   EthereumBlock,
-  Value,
 } from '@graphprotocol/graph-ts'
+
+import {
+  DssDecember6Spell as DssDecember6SpellDataSource,
+  DssFlopReplaceSpell as DssFlopReplaceSpellDataSource,
+  DssLaunchSpell as DssLaunchSpellDataSource,
+} from '../generated/templates'
+
 import { GovernanceInfo } from '../generated/schema'
+
+import {
+  DSS_DECEMBER_6_SPELL,
+  DSS_FLOP_REPLACE_SPELL,
+  DSS_LAUNCH_SPELL,
+} from './constants'
 
 let PRECISION = BigDecimal.fromString('1000000000000000000') // 10^18
 let SAI_MOM = '0xf2c5369cffb8ea6284452b0326e326dbfdcb867c'
@@ -39,7 +51,7 @@ export function toBigDecimal(value: Bytes, bigEndian: boolean = true): BigDecima
   return val.divDecimal(PRECISION)
 }
 
-export function isSaiMom(value: Address): bool {
+export function isSaiMom(value: Address): boolean {
   return value.toHex() == SAI_MOM
 }
 
@@ -75,4 +87,27 @@ export function updateGovernanceInfoEntity(
   governanceInfo.lastBlock = block.number
   governanceInfo.lastSynced = block.timestamp
   governanceInfo.save()
+}
+
+export function isCustomSpellContract(spellAddress: Address): boolean {
+  let CUSTOM_DSS_SPELL_CONTRACTS: string[] = [
+    DSS_LAUNCH_SPELL,
+    DSS_FLOP_REPLACE_SPELL,
+    DSS_DECEMBER_6_SPELL,
+  ]
+
+  return CUSTOM_DSS_SPELL_CONTRACTS.includes(spellAddress.toHexString())
+}
+
+export function createCustomSpellDataSource(spellAddress: Address): void {
+  let addr = spellAddress.toHexString()
+
+  // TODO: use a generic handler for all these contracts
+  if (addr == DSS_LAUNCH_SPELL) {
+    DssLaunchSpellDataSource.create(spellAddress)
+  } else if (addr == DSS_FLOP_REPLACE_SPELL) {
+    DssFlopReplaceSpellDataSource.create(spellAddress)
+  } else if (addr == DSS_DECEMBER_6_SPELL) {
+    DssDecember6SpellDataSource.create(spellAddress)
+  }
 }
