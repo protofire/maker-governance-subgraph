@@ -1,13 +1,22 @@
 {
-  "name": "MakerDaoGovernance",
+  "name": "makerdao-governance-subgraph",
   "license": "UNLICENSED",
   "scripts": {
-    "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ protofire/makerdao-governance-v2",
+    "codegen": "graph codegen",
     "create-local": "graph create --node http://localhost:8020/ protofire/makerdao-governance-v2",
-    "remove-local": "graph remove --node http://localhost:8020/ protofire/makerdao-governance-v2",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 protofire/makerdao-governance-v2"
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ protofire/makerdao-governance-v2",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 protofire/makerdao-governance-v2",
+    "remove-local": "graph remove --node http://localhost:8020/ protofire/makerdao-governance-v2"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.16.2",
+    "@graphprotocol/graph-ts": "0.16.0"
+  },
+  "devDependencies": {
+    "husky": "^3.0.5",
+    "lint-staged": "^9.3.0",
+    "prettier": "1.18.2"
   },
   "husky": {
     "hooks": {
@@ -19,14 +28,5 @@
       "prettier --write",
       "git add"
     ]
-  },
-  "dependencies": {
-    "@graphprotocol/graph-cli": "0.16.0",
-    "@graphprotocol/graph-ts": "0.16.0"
-  },
-  "devDependencies": {
-    "husky": "^3.0.5",
-    "lint-staged": "^9.3.0",
-    "prettier": "1.18.2"
   }
 }
