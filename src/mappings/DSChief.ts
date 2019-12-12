@@ -243,6 +243,7 @@ export function handleVote(event: LogNote): void {
   )
   action.type = 'VOTE'
   action.sender = sender
+  action.wad = fromBigIntToBigDecimal(locked)
   action.yays = slate.yays
   action.block = event.block.number
   action.transactionHash = event.transaction.hash
@@ -336,6 +337,7 @@ export function handleVoteArray(event: LogNote): void {
   )
   action.type = 'VOTE'
   action.sender = sender
+  action.wad = fromBigIntToBigDecimal(locked)
   action.yays = slate.yays
   action.block = event.block.number
   action.transactionHash = event.transaction.hash
