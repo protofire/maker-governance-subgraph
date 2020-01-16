@@ -1,6 +1,6 @@
 import { Address, log } from '@graphprotocol/graph-ts'
 
-import { DSChief } from '../../generated/templates/DssLaunchSpell/DSChief'
+import { DSChief } from '../../generated/templates/DssSpellPaused/DSChief'
 import { CastCall } from '../../generated/templates/DssSpellPaused/DssSpellPaused'
 
 import { Spell, Action } from '../../generated/schema'
