@@ -1,7 +1,7 @@
 import { Address, log } from '@graphprotocol/graph-ts'
 
 import { DSChief } from '../../generated/templates/DssLaunchSpell/DSChief'
-import { CastCall } from '../../generated/templates/DssFlopReplaceSpell/DssFlopReplaceSpell'
+import { CastCall } from '../../generated/templates/DssSpellPaused/DssSpellPaused'
 
 import { Spell, Action } from '../../generated/schema'
 
@@ -18,7 +18,7 @@ export function handleCast(call: CastCall): void {
   let dsChief = DSChief.bind(Address.fromString(DS_CHIEF))
   let approval = dsChief.approvals(call.to)
 
-  log.info('DssFlopReplaceSpell {} has been casted.', [call.to.toHexString()])
+  log.info('DssSpellPaused {} has been casted.', [call.to.toHexString()])
 
   let spellEntity = Spell.load(call.to.toHexString())
   spellEntity.casted = call.block.timestamp

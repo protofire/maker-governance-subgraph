@@ -4,10 +4,10 @@
   "scripts": {
     "build": "graph build",
     "codegen": "graph codegen",
-    "create-local": "graph create --node http://localhost:8020/ protofire/makerdao-governance",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ protofire/makerdao-governance",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 protofire/makerdao-governance",
-    "remove-local": "graph remove --node http://localhost:8020/ protofire/makerdao-governance"
+    "create-local": "graph create --node http://localhost:8020/ lmcorbalan/makerdao-governance",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ lmcorbalan/makerdao-governance --access-token 8fae2f58a1f9489888d879a1ec064d99",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 lmcorbalan/makerdao-governance",
+    "remove-local": "graph remove --node http://localhost:8020/ lmcorbalan/makerdao-governance"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.16.2",

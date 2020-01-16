@@ -6,11 +6,7 @@ import {
   EthereumBlock,
 } from '@graphprotocol/graph-ts'
 
-import {
-  DssDecember6Spell as DssDecember6SpellDataSource,
-  DssFlopReplaceSpell as DssFlopReplaceSpellDataSource,
-  DssLaunchSpell as DssLaunchSpellDataSource,
-} from '../generated/templates'
+import { DssSpellPaused } from '../generated/DSChief/DssSpellPaused'
 
 import { GovernanceInfo } from '../generated/schema'
 
@@ -18,6 +14,7 @@ import {
   DSS_DECEMBER_6_SPELL,
   DSS_FLOP_REPLACE_SPELL,
   DSS_LAUNCH_SPELL,
+  PAUSE_LIKE,
 } from './constants'
 
 let PRECISION = BigDecimal.fromString('1000000000000000000') // 10^18
@@ -55,6 +52,10 @@ export function isSaiMom(value: Address): boolean {
   return value.toHex() == SAI_MOM
 }
 
+export function isPauseLike(value: Address): boolean {
+  return value.toHex() == PAUSE_LIKE
+}
+
 export function getGovernanceInfoEntity(): GovernanceInfo {
   let id = '0x0'
   let entity = GovernanceInfo.load(id)
@@ -89,25 +90,9 @@ export function updateGovernanceInfoEntity(
   governanceInfo.save()
 }
 
-export function isCustomSpellContract(spellAddress: Address): boolean {
-  let CUSTOM_DSS_SPELL_CONTRACTS: string[] = [
-    DSS_LAUNCH_SPELL,
-    DSS_FLOP_REPLACE_SPELL,
-    DSS_DECEMBER_6_SPELL,
-  ]
+export function isDssSpellPaused(spellAddress: Address): boolean {
+  let dssSpellPaused = DssSpellPaused.bind(spellAddress)
+  let dsResponse = dssSpellPaused.try_pause()
 
-  return CUSTOM_DSS_SPELL_CONTRACTS.includes(spellAddress.toHexString())
-}
-
-export function createCustomSpellDataSource(spellAddress: Address): void {
-  let addr = spellAddress.toHexString()
-
-  // TODO: use a generic handler for all these contracts
-  if (addr == DSS_LAUNCH_SPELL) {
-    DssLaunchSpellDataSource.create(spellAddress)
-  } else if (addr == DSS_FLOP_REPLACE_SPELL) {
-    DssFlopReplaceSpellDataSource.create(spellAddress)
-  } else if (addr == DSS_DECEMBER_6_SPELL) {
-    DssDecember6SpellDataSource.create(spellAddress)
-  }
+  return !dsResponse.reverted && isPauseLike(dsResponse.value)
 }

@@ -54,8 +54,8 @@ dataSources:
           file: ./abis/DSSpell.json
         - name: RaiseCeilingLowerSF
           file: ./abis/RaiseCeilingLowerSF.json
-        - name: DssLaunchSpell
-          file: ./abis/DssLaunchSpell.json
+        - name: DssSpellPaused
+          file: ./abis/DssSpellPaused.json
       eventHandlers:
         - event: LogNote(indexed bytes4,indexed address,indexed bytes32,indexed bytes32,uint256,bytes)
           topic0: '0xdd46706400000000000000000000000000000000000000000000000000000000' # lock(uint)
@@ -156,11 +156,11 @@ templates:
           topic0: '0x96d373e500000000000000000000000000000000000000000000000000000000' # cast()
           handler: handleCast
       file: ./src/mappings/RaiseCeilingLowerSF.ts
-  - name: DssLaunchSpell
+  - name: DssSpellPaused
     kind: ethereum/contract
     network: mainnet
     source:
-      abi: DssLaunchSpell
+      abi: DssSpellPaused
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3
@@ -170,55 +170,11 @@ templates:
         - Action
         - GovernanceInfo
       abis:
-        - name: DssLaunchSpell
-          file: ./abis/DssLaunchSpell.json
+        - name: DssSpellPaused
+          file: ./abis/DssSpellPaused.json
         - name: DSChief
           file: ./abis/DSChief.json
       callHandlers:
         - function: cast()
           handler: handleCast
-      file: ./src/mappings/DssLaunchSpell.ts
-  - name: DssFlopReplaceSpell
-    kind: ethereum/contract
-    network: mainnet
-    source:
-      abi: DssFlopReplaceSpell
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      entities:
-        - Spell
-        - Action
-        - GovernanceInfo
-      abis:
-        - name: DssFlopReplaceSpell
-          file: ./abis/DssFlopReplaceSpell.json
-        - name: DSChief
-          file: ./abis/DSChief.json
-      callHandlers:
-        - function: cast()
-          handler: handleCast
-      file: ./src/mappings/DssFlopReplaceSpell.ts
-  - name: DssDecember6Spell
-    kind: ethereum/contract
-    network: mainnet
-    source:
-      abi: DssDecember6Spell
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      entities:
-        - Spell
-        - Action
-        - GovernanceInfo
-      abis:
-        - name: DssDecember6Spell
-          file: ./abis/DssDecember6Spell.json
-        - name: DSChief
-          file: ./abis/DSChief.json
-      callHandlers:
-        - function: cast()
-          handler: handleCast
-      file: ./src/mappings/DssDecember6Spell.ts
+      file: ./src/mappings/DssSpellPaused.ts
