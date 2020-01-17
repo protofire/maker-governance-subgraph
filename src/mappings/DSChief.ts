@@ -14,6 +14,7 @@ import { RaiseCeilingLowerSF } from '../../generated/DSChief/RaiseCeilingLowerSF
 import {
   DSSpell as DSSpellTemplate,
   RaiseCeilingLowerSF as RaiseCeilingLowerSFTemplate,
+  DssSpellPaused as DssSpellPausedTemplate,
 } from '../../generated/templates'
 
 import {
@@ -39,8 +40,7 @@ import {
   getGovernanceInfoEntity,
   updateGovernanceInfoEntity,
   toAddress,
-  isCustomSpellContract,
-  createCustomSpellDataSource,
+  isDssSpellPaused,
 } from '../helpers'
 
 export function handleLock(event: LogNote): void {
@@ -399,8 +399,8 @@ function handleSlate(
       spell.totalVotes = BIGINT_ZERO
       spell.timeLineCount = BIGINT_ZERO
 
-      if (isCustomSpellContract(spellAddress)) {
-        createCustomSpellDataSource(spellAddress)
+      if (isDssSpellPaused(spellAddress)) {
+        DssSpellPausedTemplate.create(spellAddress)
 
         // Update spells count
         governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
