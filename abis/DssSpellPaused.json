@@ -1,0 +1,26 @@
+[
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "cast",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "pause",
+    "outputs": [
+      {
+        "internalType": "contract PauseLike",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
