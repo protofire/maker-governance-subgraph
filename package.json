@@ -1,13 +1,14 @@
 {
   "name": "makerdao-governance-subgraph",
+  "version": "1.5.1",
   "license": "UNLICENSED",
   "scripts": {
     "build": "graph build",
     "codegen": "graph codegen",
-    "create-local": "graph create --node http://localhost:8020/ protofire/makerdao-governance",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ protofire/makerdao-governance",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 protofire/makerdao-governance",
-    "remove-local": "graph remove --node http://localhost:8020/ protofire/makerdao-governance"
+    "create-local": "graph create --node http://localhost:8020/ protofire/makerdao-governance-v1_5",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ protofire/makerdao-governance-v1_5",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 protofire/makerdao-governance-v1_5",
+    "remove-local": "graph remove --node http://localhost:8020/ protofire/makerdao-governance-v1_5"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.16.2",
