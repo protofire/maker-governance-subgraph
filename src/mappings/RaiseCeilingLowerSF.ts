@@ -14,8 +14,6 @@ import {
 } from '../helpers'
 
 export function handleCast(event: LogNote): void {
-  let contract = RaiseCeilingLowerSF.bind(event.address)
-
   let dsChief = DSChief.bind(
     Address.fromString('0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5'),
   )

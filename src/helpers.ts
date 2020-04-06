@@ -10,12 +10,7 @@ import { DssSpellPaused } from '../generated/DSChief/DssSpellPaused'
 
 import { GovernanceInfo } from '../generated/schema'
 
-import {
-  DSS_DECEMBER_6_SPELL,
-  DSS_FLOP_REPLACE_SPELL,
-  DSS_LAUNCH_SPELL,
-  PAUSE_LIKE,
-} from './constants'
+import { PAUSE_LIKE } from './constants'
 
 let PRECISION = BigDecimal.fromString('1000000000000000000') // 10^18
 let SAI_MOM = '0xf2c5369cffb8ea6284452b0326e326dbfdcb867c'
