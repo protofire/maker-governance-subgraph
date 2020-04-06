@@ -1,5 +1,6 @@
 {
   "name": "makerdao-governance-subgraph",
+  "version": "1.5.1",
   "license": "UNLICENSED",
   "scripts": {
     "build": "graph build",
