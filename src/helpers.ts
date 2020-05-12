@@ -48,6 +48,13 @@ export function toBigDecimal(value: Bytes, bigEndian: boolean = true): BigDecima
   return val.divDecimal(PRECISION)
 }
 
+export function msToSecondstime(time: BigInt): BigInt {
+  let timeBigDecimal = time.divDecimal(BigDecimal.fromString('1'))
+  return timeBigDecimal.ge(BigDecimal.fromString('100000000000'))
+    ? time.div(BigInt.fromI32(1000))
+    : time
+}
+
 export function isSaiMom(value: Address): boolean {
   return value.toHex() == SAI_MOM
 }

@@ -19,6 +19,7 @@ import {
   BIGINT_ZERO,
   getGovernanceInfoEntity,
   updateGovernanceInfoEntity,
+  msToSecondstime,
 } from '../helpers'
 
 export function handlePollCreated(event: PollCreated): void {
@@ -28,7 +29,7 @@ export function handlePollCreated(event: PollCreated): void {
   poll.blockCreated = event.params.blockCreated
   poll.pollId = event.params.pollId
   poll.startDate = event.params.startDate
-  poll.endDate = event.params.endDate
+  poll.endDate = msToSecondstime(event.params.endDate)
   poll.multiHash = event.params.multiHash
   poll.url = event.params.url
   poll.votesCount = BIGINT_ZERO
@@ -59,6 +60,11 @@ export function handlePollVote(event: Voted): void {
   let poll = Poll.load(event.params.pollId.toString())
 
   if (poll !== null) {
+    if (poll.endDate < event.block.timestamp) {
+      log.warning('handlePollVote: Trying to vote before this Pool ends.', [])
+      return
+    }
+
     let id = event.params.pollId.toString() + '-' + event.params.voter.toHexString()
     let pollVote = PollVote.load(id)
 
