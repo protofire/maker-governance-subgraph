@@ -1,5 +1,3 @@
-import { log } from '@graphprotocol/graph-ts'
-
 import { LinkConfirmed as LinkConfirmedEvent } from '../../generated/VoteProxyFactory/VoteProxyFactory'
 import { VoteProxy, VoterRegistry, Action } from '../../generated/schema'
 
