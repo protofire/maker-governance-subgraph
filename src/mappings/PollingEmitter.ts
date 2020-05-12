@@ -61,7 +61,7 @@ export function handlePollVote(event: Voted): void {
 
   if (poll !== null) {
     if (poll.endDate < event.block.timestamp) {
-      log.warning('handlePollVote: Trying to vote before this Pool ends.', [])
+      log.warning('handlePollVote: Trying to vote before this Poll ends.', [])
       return
     }
 
