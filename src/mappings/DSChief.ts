@@ -406,6 +406,9 @@ function handleSlate(
         governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
         spell.save()
+
+        // only add the yay if it's a spell
+        slate.yays = slate.yays.concat([spellAddress])
       } else {
         let dsSpell = DSSpell.bind(spellAddress)
         let dsResponse = dsSpell.try_whom()
@@ -421,6 +424,9 @@ function handleSlate(
           governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
           spell.save()
+
+          // only add the yay if it's a spell
+          slate.yays = slate.yays.concat([spellAddress])
         } else if (dsResponse.reverted) {
           let raiseCeilingLowerSF = RaiseCeilingLowerSF.bind(spellAddress)
           let rclsfResponse = raiseCeilingLowerSF.try_MOM()
@@ -437,12 +443,14 @@ function handleSlate(
             governanceInfo.countSpells = governanceInfo.countSpells.plus(BIGINT_ONE)
 
             spell.save()
+
+            // only add the yay if it's a spell
+            slate.yays = slate.yays.concat([spellAddress])
           }
         }
       }
     }
-    // Save slate's yay (even if it isn't a spell)
-    slate.yays = slate.yays.concat([spellAddress])
+
     slateResponse = dsChief.try_slates(slateID, BigInt.fromI32(++i))
   }
 
