@@ -4,7 +4,7 @@ import {
   Bytes,
   Address,
   BigDecimal,
-  EthereumBlock,
+  ethereum,
 } from '@graphprotocol/graph-ts'
 
 import { LogNote, DSChief, Etch } from '../../generated/DSChief/DSChief'
@@ -366,7 +366,7 @@ export function handleEtch(event: Etch): void {
 function handleSlate(
   slateID: Bytes,
   chiefAddress: Address,
-  block: EthereumBlock,
+  block: ethereum.Block,
   governanceInfo: GovernanceInfo = getGovernanceInfoEntity(),
 ): void {
   if (Slate.load(slateID.toHex()) != null) {

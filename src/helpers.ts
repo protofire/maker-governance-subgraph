@@ -1,10 +1,4 @@
-import {
-  Address,
-  BigDecimal,
-  BigInt,
-  Bytes,
-  EthereumBlock,
-} from '@graphprotocol/graph-ts'
+import { Address, BigDecimal, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts'
 
 import { DssSpellPaused } from '../generated/DSChief/DssSpellPaused'
 
@@ -82,7 +76,7 @@ export function getGovernanceInfoEntity(): GovernanceInfo {
 }
 
 export function updateGovernanceInfoEntity(
-  block: EthereumBlock,
+  block: ethereum.Block,
   governanceInfo: GovernanceInfo = getGovernanceInfoEntity(),
 ): void {
   if (governanceInfo == null) {
